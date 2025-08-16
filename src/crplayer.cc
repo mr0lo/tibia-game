@@ -1051,46 +1051,46 @@ void TPlayer::SetProfession(uint8 Profession){
 		this->Skills[SKILL_HITPOINTS     ]->AddLevel = 15;
 		this->Skills[SKILL_MANA          ]->AddLevel = 5;
 		this->Skills[SKILL_CARRY_STRENGTH]->AddLevel = 25;
-		this->Skills[SKILL_MAGIC_LEVEL   ]->ChangeSkill(3000, 1600);
-		this->Skills[SKILL_SHIELDING     ]->ChangeSkill(1100, 100);
-		this->Skills[SKILL_DISTANCE      ]->ChangeSkill(1400, 30);
-		this->Skills[SKILL_SWORD         ]->ChangeSkill(1100, 50);
-		this->Skills[SKILL_CLUB          ]->ChangeSkill(1100, 50);
-		this->Skills[SKILL_AXE           ]->ChangeSkill(1100, 50);
-		this->Skills[SKILL_FIST          ]->ChangeSkill(1100, 50);
+		this->Skills[SKILL_MAGIC_LEVEL   ]->ChangeSkill(3000, 400);
+		this->Skills[SKILL_SHIELDING     ]->ChangeSkill(1000, 100);
+		this->Skills[SKILL_DISTANCE      ]->ChangeSkill(1000, 30);
+		this->Skills[SKILL_SWORD         ]->ChangeSkill(1000, 50);
+		this->Skills[SKILL_CLUB          ]->ChangeSkill(1000, 50);
+		this->Skills[SKILL_AXE           ]->ChangeSkill(1000, 50);
+		this->Skills[SKILL_FIST          ]->ChangeSkill(1000, 50);
 	}else if(Profession == PROFESSION_PALADIN){
 		this->Skills[SKILL_HITPOINTS     ]->AddLevel = 10;
 		this->Skills[SKILL_MANA          ]->AddLevel = 15;
 		this->Skills[SKILL_CARRY_STRENGTH]->AddLevel = 20;
-		this->Skills[SKILL_MAGIC_LEVEL   ]->ChangeSkill(1400, 1600);
-		this->Skills[SKILL_SHIELDING     ]->ChangeSkill(1100, 100);
-		this->Skills[SKILL_DISTANCE      ]->ChangeSkill(1100, 30);
-		this->Skills[SKILL_SWORD         ]->ChangeSkill(1200, 50);
-		this->Skills[SKILL_CLUB          ]->ChangeSkill(1200, 50);
-		this->Skills[SKILL_AXE           ]->ChangeSkill(1200, 50);
-		this->Skills[SKILL_FIST          ]->ChangeSkill(1200, 50);
+		this->Skills[SKILL_MAGIC_LEVEL   ]->ChangeSkill(1400, 400);
+		this->Skills[SKILL_SHIELDING     ]->ChangeSkill(1000, 100);
+		this->Skills[SKILL_DISTANCE      ]->ChangeSkill(1000, 30);
+		this->Skills[SKILL_SWORD         ]->ChangeSkill(1000, 50);
+		this->Skills[SKILL_CLUB          ]->ChangeSkill(1000, 50);
+		this->Skills[SKILL_AXE           ]->ChangeSkill(1000, 50);
+		this->Skills[SKILL_FIST          ]->ChangeSkill(1000, 50);
 	}else if(Profession == PROFESSION_SORCERER){
 		this->Skills[SKILL_HITPOINTS     ]->AddLevel = 5;
 		this->Skills[SKILL_MANA          ]->AddLevel = 30;
 		this->Skills[SKILL_CARRY_STRENGTH]->AddLevel = 10;
-		this->Skills[SKILL_MAGIC_LEVEL   ]->ChangeSkill(1100, 1600);
-		this->Skills[SKILL_SHIELDING     ]->ChangeSkill(1500, 100);
-		this->Skills[SKILL_DISTANCE      ]->ChangeSkill(2000, 30);
-		this->Skills[SKILL_SWORD         ]->ChangeSkill(2000, 50);
-		this->Skills[SKILL_CLUB          ]->ChangeSkill(2000, 50);
-		this->Skills[SKILL_AXE           ]->ChangeSkill(2000, 50);
-		this->Skills[SKILL_FIST          ]->ChangeSkill(1500, 50);
+		this->Skills[SKILL_MAGIC_LEVEL   ]->ChangeSkill(1100, 400);
+		this->Skills[SKILL_SHIELDING     ]->ChangeSkill(1000, 100);
+		this->Skills[SKILL_DISTANCE      ]->ChangeSkill(1000, 30);
+		this->Skills[SKILL_SWORD         ]->ChangeSkill(1000, 50);
+		this->Skills[SKILL_CLUB          ]->ChangeSkill(1000, 50);
+		this->Skills[SKILL_AXE           ]->ChangeSkill(1000, 50);
+		this->Skills[SKILL_FIST          ]->ChangeSkill(1000, 50);
 	}else if(Profession == PROFESSION_DRUID){
 		this->Skills[SKILL_HITPOINTS     ]->AddLevel = 5;
 		this->Skills[SKILL_MANA          ]->AddLevel = 30;
 		this->Skills[SKILL_CARRY_STRENGTH]->AddLevel = 10;
-		this->Skills[SKILL_MAGIC_LEVEL   ]->ChangeSkill(1100, 1600);
-		this->Skills[SKILL_SHIELDING     ]->ChangeSkill(1500, 100);
-		this->Skills[SKILL_DISTANCE      ]->ChangeSkill(1800, 30);
-		this->Skills[SKILL_SWORD         ]->ChangeSkill(1800, 50);
-		this->Skills[SKILL_CLUB          ]->ChangeSkill(1800, 50);
-		this->Skills[SKILL_AXE           ]->ChangeSkill(1800, 50);
-		this->Skills[SKILL_FIST          ]->ChangeSkill(1500, 50);
+		this->Skills[SKILL_MAGIC_LEVEL   ]->ChangeSkill(1100, 400);
+		this->Skills[SKILL_SHIELDING     ]->ChangeSkill(1000, 100);
+		this->Skills[SKILL_DISTANCE      ]->ChangeSkill(1000, 30);
+		this->Skills[SKILL_SWORD         ]->ChangeSkill(1000, 50);
+		this->Skills[SKILL_CLUB          ]->ChangeSkill(1000, 50);
+		this->Skills[SKILL_AXE           ]->ChangeSkill(1000, 50);
+		this->Skills[SKILL_FIST          ]->ChangeSkill(1000, 50);
 	}else{
 		error("TPlayer::SetProfession: Beruf %d existiert nicht!\n", Profession);
 		return;
@@ -1138,6 +1138,16 @@ bool TPlayer::SpellKnown(int SpellNr){
 }
 
 void TPlayer::LearnSpell(int SpellNr){
+	// 7.4: require magic level to learn spells
+	if(SpellNr >= 0 && SpellNr < 256){
+		int reqMlvl = GetSpellLevel(SpellNr);
+		int curMlvl = this->Skills[SKILL_MAGIC_LEVEL]->Get();
+		if(curMlvl < reqMlvl){
+			SendMessage(this->Connection, TALK_FAILURE_MESSAGE, \"You need magic level %d to learn this spell.\", reqMlvl);
+			return;
+		}
+	}
+
 	if(SpellNr < 0 || SpellNr >= NARRAY(this->SpellList)){
 		error("TPlayer::LearnSpell: Ungültige Spruchnummer %d.\n", SpellNr);
 		return;

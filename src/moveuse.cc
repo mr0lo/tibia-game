@@ -1767,7 +1767,13 @@ void UseLiquidContainer(uint32 CreatureID, Object Obj, Object Dest){
 		throw ERROR;
 	}
 
-	switch(LiquidType){
+	TCreature *TargetCreature = NULL;
+if(DestType.isCreatureContainer()){
+	Object top = GetFirstContainerObject(Dest.getContainer());
+	while(top != NONE && !top.getObjectType().isCreatureContainer()) top = top.getNextObject();
+	if(top == Dest){ TargetCreature = GetCreature(Dest); }
+}
+switch(LiquidType){
 		case LIQUID_NONE:{
 			// no-op
 			break;

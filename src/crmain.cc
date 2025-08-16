@@ -1059,7 +1059,7 @@ void ProcessCreatures(void){
 		if(RegenInterval > 0 && (RoundNr % RegenInterval) == 0 && !Creature->IsDead
 				&& !IsProtectionZone(Creature->posx, Creature->posy, Creature->posz)){
 			Creature->Skills[SKILL_HITPOINTS]->Change(1);
-			Creature->Skills[SKILL_MANA]->Change(4);
+			Creature->Skills[SKILL_MANA]->Change(1); // 7.4: Life Ring/RoH mana regen nerf
 			if(Creature->Type == PLAYER){
 				SendPlayerData(Creature->Connection);
 			}

@@ -3858,7 +3858,7 @@ void GetSpellbook(uint32 CharacterID, char *Buffer){
 			}
 
 			if(First){
-				sprintf(Help, "Spells for Level %d\n", Level);
+				sprintf(Help, "Spells for Magic Level %d\n", Level); // 7.4
 				strcat(Buffer, Help);
 				First = false;
 			}
@@ -4315,7 +4315,7 @@ void DrinkPotion(uint32 CreatureID, Object Obj){
 
 	int LiquidType = (int)Obj.getAttribute(CONTAINERLIQUIDTYPE);
 	if(LiquidType == LIQUID_MANA){
-		int Amount = ComputeDamage(NULL, 0, 100, 50);
+		int Amount = ComputeDamage(NULL, 0, 50, 25); // 7.4 manafluid avg 50
 		RefreshMana(Player, 0, 0, Amount);
 	}else if(LiquidType == LIQUID_LIFE){
 		int Amount = ComputeDamage(NULL, 0, 50, 25);
