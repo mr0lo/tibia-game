@@ -1,4 +1,4 @@
-# Tibia 7.7 Game Server
+# Tibia 7.4 Game Server
 This is the result of manually decompiling the leaked Tibia 7.7 server binary into a readable version of the original source code. With the exception of a few [changes](#changes), expected typos, and translation errors, everything should be as close as possible to the original. I do expect problems so any issues should be submitted to the issue tracker with the appropriate description.
 
 ## License and Legal Issues
