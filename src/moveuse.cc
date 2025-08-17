@@ -1725,10 +1725,22 @@ void UseLiquidContainer(uint32 CreatureID, Object Obj, Object Dest){
 		return;
 	}
 
+	// NOTE(fusion): This is similar to the target picking logic for runes except
+	// we want to prioritize the user drinking the liquid, instead of otherwise
+	// throwing it on the ground.
 	// 7.4: fluids affect only TOP creature if targeted; no auto-redirect to self.
+	/*if (!DestType.isCreatureContainer()) {
+		Object Help = GetFirstContainerObject(Dest.getContainer());
+		while (Help != NONE) {
+			ObjectType HelpType = Help.getObjectType();
+			if (HelpType.isCreatureContainer() && Help.getCreatureID() == CreatureID) {
+				Dest = Help;
+				DestType = HelpType;
+				break;
+			}
 			Help = Help.getNextObject();
 		}
-	}
+	}*/
 
 	// NOTE(fusion): Spill liquid.
 	if(!DestType.isCreatureContainer() || Dest.getCreatureID() != CreatureID){
