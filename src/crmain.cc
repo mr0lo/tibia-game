@@ -472,8 +472,11 @@ int TCreature::Damage(TCreature *Attacker, int Damage, int DamageType){
 
 	// NOTE(fusion): `Responsible` is either the attacker or its master. It is
 	// always valid if `Attacker` is not NULL.
+	uint32 AttackerID = 0;
 	TCreature *Responsible = Attacker;
 	if(Attacker != NULL){
+		AttackerID = Attacker->ID;
+
 		uint32 MasterID = Attacker->GetMaster();
 		if(MasterID != 0){
 			Responsible = GetCreature(MasterID);
@@ -542,20 +545,20 @@ int TCreature::Damage(TCreature *Attacker, int Damage, int DamageType){
 		}
 
 		if(Damage > this->Skills[SKILL_POISON]->TimerValue()){
-			this->PoisonDamageOrigin = Attacker->ID;
+			this->PoisonDamageOrigin = AttackerID;
 			this->SetTimer(SKILL_POISON, Damage, 3, 3, -1);
 		}
 
-		this->DamageStimulus(Attacker->ID, Damage, DamageType);
+		this->DamageStimulus(AttackerID, Damage, DamageType);
 		return Damage;
 	}else if(DamageType == DAMAGE_FIRE_PERIODIC){
 		if(RaceData[this->Race].NoBurning){
 			return 0;
 		}
 
-		this->FireDamageOrigin = Attacker->ID;
+		this->FireDamageOrigin = AttackerID;
 		this->SetTimer(SKILL_BURNING, Damage / 10, 8, 8, -1);
-		this->DamageStimulus(Attacker->ID, Damage, DamageType);
+		this->DamageStimulus(AttackerID, Damage, DamageType);
 		return Damage;
 	}else if(DamageType == DAMAGE_ENERGY_PERIODIC){
 		if(RaceData[this->Race].NoEnergy){
@@ -563,9 +566,9 @@ int TCreature::Damage(TCreature *Attacker, int Damage, int DamageType){
 		}
 
 		// TODO(fusion): Shouldn't we use `Damage / 25` here?
-		this->EnergyDamageOrigin = Attacker->ID;
+		this->EnergyDamageOrigin = AttackerID;
 		this->SetTimer(SKILL_ENERGY, Damage / 20, 10, 10, -1);
-		this->DamageStimulus(Attacker->ID, Damage, DamageType);
+		this->DamageStimulus(AttackerID, Damage, DamageType);
 		return Damage;
 	}
 
@@ -586,7 +589,7 @@ int TCreature::Damage(TCreature *Attacker, int Damage, int DamageType){
 		}
 	}
 
-	this->DamageStimulus(Attacker->ID, Damage, DamageType);
+	this->DamageStimulus(AttackerID, Damage, DamageType);
 
 	// NOTE(fusion): Remove non-player invisibility. Might as well be an inlined
 	// function.
@@ -698,7 +701,7 @@ int TCreature::Damage(TCreature *Attacker, int Damage, int DamageType){
 				break;
 			}
 		}
-	}else if(Damage == DAMAGE_POISON){
+	}else if(DamageType == DAMAGE_POISON){
 		HitEffect = EFFECT_POISON;
 		TextColor = COLOR_LIGHTGREEN;
 	}else if(DamageType == DAMAGE_FIRE){

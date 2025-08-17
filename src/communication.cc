@@ -928,7 +928,7 @@ bool HandleLogin(TConnection *Connection){
 			RSAMutex.up();
 			error("HandleLogin: Fehler beim Entschlüsseln.\n");
 			SendLoginMessage(Connection, 20,
-					"Login failed due to corrupt data.",-1);
+					"Login failed due to corrupt data.", -1);
 			return false;
 		}
 		RSAMutex.up();
@@ -1394,16 +1394,16 @@ bool OpenSocket(void){
 		return false;
 	}
 
-	struct linger linger = {};
-	linger.l_onoff = 0;
-	linger.l_linger = 0;
-	if(setsockopt(TCPSocket, SOL_SOCKET, SO_LINGER, &linger, sizeof(linger)) == -1){
+	struct linger Linger = {};
+	Linger.l_onoff = 0;
+	Linger.l_linger = 0;
+	if(setsockopt(TCPSocket, SOL_SOCKET, SO_LINGER, &Linger, sizeof(Linger)) == -1){
 		error("LaunchServer: Socket wurde nicht auf LINGER=0 gesetzt.\n");
 		return false;
 	}
 
-	int reuseaddr = 1;
-	if(setsockopt(TCPSocket, SOL_SOCKET, SO_REUSEADDR, &reuseaddr, sizeof(reuseaddr)) == -1){
+	int ReuseAddr = 1;
+	if(setsockopt(TCPSocket, SOL_SOCKET, SO_REUSEADDR, &ReuseAddr, sizeof(ReuseAddr)) == -1){
 		error("LaunchServer: Fehler %d bei setsockopt.\n", errno);
 		return false;
 	}

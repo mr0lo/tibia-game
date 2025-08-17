@@ -1350,7 +1350,7 @@ void ExecuteAction(MoveUseEventType EventType, TMoveUseAction *Action,
 				Object Top = GetTopObject((ObjX + OrigRelX), (ObjY + OrigRelY), (ObjZ + OrigRelZ), false);
 				if(Top != NONE && !Top.getObjectType().getFlag(UNMOVE)){
 					Object Dest = GetMapContainer((ObjX + DestRelX), (ObjY + DestRelY), (ObjZ + DestRelZ));
-					MoveOneObject(Obj, Dest);
+					MoveOneObject(Top, Dest);
 				}
 				break;
 			}
