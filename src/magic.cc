@@ -4045,15 +4045,36 @@ void UseMagicItem(uint32 CreatureID, Object Obj, Object Dest){
 	}
 
 
-	// NOTE(fusion): This target picking logic is probably to avoid picking
-	// obviously wrong candidates when there are multiple creatures on a single
-	// field.
+	// 7.4 UH trap: for healing runes, only the TOP creature on the tile can be targeted
 	TCreature *Target = NULL;
 	bool Aggressive = IsAggressiveSpell(SpellNr);
 	{
-		if(Dest.getObjectType().isCreatureContainer()){
-			Target = GetCreature(Dest);
+		Object top = GetFirstContainerObject(Dest.getContainer());
+		if(!Aggressive && (SpellNr == 4 || SpellNr == 5)){
+			while(top != NONE && !top.getObjectType().isCreatureContainer()) top = top.getNextObject();
+			if(top != NONE && top.getObjectType().isCreatureContainer()){
+				Target = GetCreature(top);
+				Dest = top;
+			}
+		}else{
+			if(Dest.getObjectType().isCreatureContainer()){
+				Target = GetCreature(Dest);
+			}
+			Object Other = top;
+			while(Other != NONE){
+				if(Other.getObjectType().isCreatureContainer()){
+					uint32 OtherID = Other.getCreatureID();
+					if(Target == NULL
+							|| (Aggressive && OtherID != Actor->ID && OtherID != Target->ID)
+							|| (!Aggressive && OtherID == Actor->ID && OtherID != Target->ID)){
+						Target = GetCreature(OtherID);
+						Dest = Other;
+					}
+				}
+				Other = Other.getNextObject();
+			}
 		}
+	}
 
 		Object Other = GetFirstContainerObject(Dest.getContainer());
 		while(Other != NONE){
