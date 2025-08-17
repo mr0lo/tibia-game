@@ -1691,7 +1691,7 @@ void SendBuddyData(TConnection *Connection, uint32 CharacterID, const char *Name
 	}
 
 	SendByte(Connection, SV_CMD_BUDDY_DATA);
-	SendWord(Connection, CharacterID);
+	SendQuad(Connection, CharacterID);
 	SendString(Connection, Name);
 	SendByte(Connection, (Online ? 1 : 0));
 	FinishSendData(Connection);
