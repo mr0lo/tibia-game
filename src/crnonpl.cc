@@ -1357,7 +1357,21 @@ void LoadMonsterhomes(void){
 
 	for(int i = 0; i < Monsterhomes; i += 1){
 		TMonsterhome *MH = Monsterhome.at(i);
-		for (int j = 0; j < MH->MaxMonsters; j += 1){
+		// 7.4 overspawn: count only monsters from this home that are "in range"
+		int InRangeCount = 0;
+		for(int idx = 0; idx < FirstFreeNonplayer; ++idx){
+			TNonplayer *NP = *NonplayerList.at(idx);
+			if(NP && NP->Type == MONSTER && NP->Home == i){
+				if(MonsterhomeInRange(i, NP->posx, NP->posy, NP->posz)){
+					InRangeCount += 1;
+				}
+			}
+		}
+		int DesiredMax = MH->MaxMonsters; // do not multiply; pure 7.4 behavior
+		int FreeSlots = DesiredMax - InRangeCount;
+		if(FreeSlots < 0) FreeSlots = 0;
+
+		for (int j = 0; j < FreeSlots; j += 1){
 			int SpawnX = MH->x;
 			int SpawnY = MH->y;
 			int SpawnZ = MH->z;
@@ -1386,7 +1400,7 @@ void LoadMonsterhomes(void){
 		if(MH->Timer > 0){
 			error("LoadMonsterhomes: Timer läuft schon (Rasse %d an [%d,%d,%d]).\n",
 					MH->Race, MH->x, MH->y, MH->z);
-		}else if(MH->ActMonsters < MH->MaxMonsters){
+		}else if (InRangeCount < DesiredMax) { // 7.4 overspawn: based on in-range count
 			StartMonsterhomeTimer(i);
 		}
 	}
