@@ -5,12 +5,11 @@
 #include "magic.hh"
 #include "operate.hh"
 #include "writer.hh"
+#include <dirent.h>
 
 // 7.4: screen-based activation range (client visible area)
 static const int VIEW_RANGE_X = 8; // left/right
 static const int VIEW_RANGE_Y = 6; // up/down
-
-#include <dirent.h>
 
 static vector<TNonplayer*> NonplayerList(0, 10000, 1000, NULL);
 static int FirstFreeNonplayer;
