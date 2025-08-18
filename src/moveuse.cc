@@ -1724,7 +1724,7 @@ void UseLiquidContainer(uint32 CreatureID, Object Obj, Object Dest){
 		Change(Obj, CONTAINERLIQUIDTYPE, LIQUID_NONE);
 		return;
 	}
- 
+
 	// ===== 7.4: fluids affect only TOP creature if targeted; no auto-redirect to self. =====
 	/*
 	// NOTE(fusion): This is similar to the target picking logic for runes except

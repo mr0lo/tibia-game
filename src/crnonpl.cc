@@ -2361,6 +2361,7 @@ void TMonster::IdleStimulus(void){
 		if(this->Target == 0 || this->Target == this->ID){
 			this->Target = this->Master;
 		}
+
 	// ===== 7.4 no-despawn (map-spawned monsters): allow luring across the whole map =====
 	/*
 	}else{
@@ -2372,10 +2373,9 @@ void TMonster::IdleStimulus(void){
 			this->State = SLEEPING;
 			return;
 		}
-	}
 	*/
 	// ===== end 7.4 no-despawn (map-spawned) =====
-
+	}
 
 	if(this->Target != 0){
 		TCreature *Target = GetCreature(this->Target);
