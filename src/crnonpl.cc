@@ -6,6 +6,10 @@
 #include "operate.hh"
 #include "writer.hh"
 
+// 7.4: screen-based activation range (client visible area)
+static const int VIEW_RANGE_X = 8; // left/right
+static const int VIEW_RANGE_Y = 6; // up/down
+
 #include <dirent.h>
 
 static vector<TNonplayer*> NonplayerList(0, 10000, 1000, NULL);
@@ -1357,21 +1361,7 @@ void LoadMonsterhomes(void){
 
 	for(int i = 0; i < Monsterhomes; i += 1){
 		TMonsterhome *MH = Monsterhome.at(i);
-		// 7.4 overspawn: count only monsters from this home that are "in range"
-		int InRangeCount = 0;
-		for(int idx = 0; idx < FirstFreeNonplayer; ++idx){
-			TNonplayer *NP = *NonplayerList.at(idx);
-			if(NP && NP->Type == MONSTER && NP->Home == i){
-				if(MonsterhomeInRange(i, NP->posx, NP->posy, NP->posz)){
-					InRangeCount += 1;
-				}
-			}
-		}
-		int DesiredMax = MH->MaxMonsters; // do not multiply; pure 7.4 behavior
-		int FreeSlots = DesiredMax - InRangeCount;
-		if(FreeSlots < 0) FreeSlots = 0;
-
-		for (int j = 0; j < FreeSlots; j += 1){
+		for (int j = 0; j < MH->MaxMonsters; j += 1){
 			int SpawnX = MH->x;
 			int SpawnY = MH->y;
 			int SpawnZ = MH->z;
@@ -1400,7 +1390,7 @@ void LoadMonsterhomes(void){
 		if(MH->Timer > 0){
 			error("LoadMonsterhomes: Timer läuft schon (Rasse %d an [%d,%d,%d]).\n",
 					MH->Race, MH->x, MH->y, MH->z);
-		}else if (InRangeCount < DesiredMax) { // 7.4 overspawn: based on in-range count
+		}else if(MH->ActMonsters < MH->MaxMonsters){
 			StartMonsterhomeTimer(i);
 		}
 	}
@@ -2308,6 +2298,20 @@ void TMonster::IdleStimulus(void){
 		print(3, "Lebenszeit für %s abgelaufen.\n", this->Name);
 		this->StartLogout(true, true);
 		this->State = SLEEPING;
+	// 7.4: monsters do not move on their own when there's nobody nearby on the same floor.
+	// If no player is on the same Z within screen-based activation range and there is no active target, remain idle.
+	if(this->Target == 0 && !this->IsPlayerControlled()){
+		bool playerNearby = false;
+		for(int i = 0; i < FirstFreePlayer; ++i){
+			TPlayer *Pl = *PlayerList.at(i);
+			if(Pl && Pl->posz == this->posz){
+				int dx = std::abs(Pl->posx - this->posx);
+				int dy = std::abs(Pl->posy - this->posy);
+				if(dx <= VIEW_RANGE_X && dy <= VIEW_RANGE_Y){ playerNearby = true; break; }
+			}
+		}
+		if(!playerNearby){ return; }
+	}
 		return;
 	}
 

@@ -1768,6 +1768,7 @@ void UseLiquidContainer(uint32 CreatureID, Object Obj, Object Dest){
 		throw ERROR;
 	}
 
+	// 7.4 UH trap: for life/mana fluids, only the TOP creature on the tile can be targeted
 	TCreature *TargetCreature = NULL;
 	if(DestType.isCreatureContainer()){
 		Object top = GetFirstContainerObject(Dest.getContainer());
