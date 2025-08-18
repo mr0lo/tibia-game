@@ -1778,6 +1778,7 @@ void UseLiquidContainer(uint32 CreatureID, Object Obj, Object Dest){
 		while(top != NONE && !top.getObjectType().isCreatureContainer()) top = top.getNextObject();
 		if(top == Dest){ TargetCreature = GetCreature(Dest); }
 	}
+
 	switch(LiquidType){
 		case LIQUID_NONE:{
 			// no-op
@@ -2447,6 +2448,21 @@ void CollisionEvent(Object Obj, Object Dest){
 					}
 
 					Object TeleportDest = GetMapContainer(TeleportDestX, TeleportDestY, TeleportDestZ);
+					// 7.4 rope: do not allow using rope if the destination rope spot is cluttered (any item other than ground/pool)
+					// Apply ONLY for rope item use: relative pure vertical up on a ROPESPOT.
+					if(HelpType.getFlag(TELEPORTRELATIVE) && HelpType.getFlag(ROPESPOT)){
+						int dx = DisplacementX, dy = DisplacementY, dz = DisplacementZ;
+						if(dx == 0 && dy == 0 && dz < 0){
+							Object H = GetFirstContainerObject(TeleportDest);
+							while(H != NONE){
+								ObjectType HT = H.getObjectType();
+								if(!HT.getFlag(BOTTOM) && !HT.getFlag(LIQUIDPOOL)){
+									throw NOTACCESSIBLE; // rope fails if rope spot is not clear
+								}
+								H = H.getNextObject();
+							}
+						}
+					}
 					MoveOneObject(Obj, TeleportDest);
 					GraphicalEffect(TeleportDestX, TeleportDestY, TeleportDestZ, TeleportEffect);
 				}else if(HelpType.getFlag(COLLISIONEVENT)){

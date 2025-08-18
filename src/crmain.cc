@@ -872,7 +872,17 @@ bool TCreature::MovePossible(int x, int y, int z, bool Execute, bool Jump){
 		Result = false;
 	}
 
-	return Result;
+	
+	// 7.4 block heights: limit step-up to one elevation unit at a time (e.g., 1 parcel).
+	// You can step down freely, but stepping onto a stack more than +1 higher is blocked.
+	if(Result){
+		int fromH = GetHeight(this->posx, this->posy, this->posz);
+		int toH   = GetHeight(x, y, z);
+		if(toH - fromH > 1){
+			Result = false;
+		}
+	}
+return Result;
 }
 
 bool TCreature::IsPeaceful(void){
