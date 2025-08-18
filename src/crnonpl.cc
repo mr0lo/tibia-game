@@ -2363,7 +2363,6 @@ void TMonster::IdleStimulus(void){
 		}
 	// ===== 7.4 no-despawn (map-spawned monsters): allow luring across the whole map =====
 	/*
-
 	}else{
 		if(!MonsterhomeInRange(this->Home, this->posx, this->posy, this->posz)){
 			TMonsterhome *MH = Monsterhome.at(this->Home);
@@ -2373,7 +2372,8 @@ void TMonster::IdleStimulus(void){
 			this->State = SLEEPING;
 			return;
 		}
-	}*/
+	}
+	*/
 	// ===== end 7.4 no-despawn (map-spawned) =====
 
 
