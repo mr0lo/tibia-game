@@ -18,6 +18,10 @@ static TMoveUseDatabase MoveUseDatabases[5];
 static vector<TDelayedMail> DelayedMail(0, 10, 10);
 static int DelayedMails;
 
+int DisplacementX = 0;
+int DisplacementY = 0; 
+int DisplacementZ = 0;
+
 // Coordinate Packing
 // =============================================================================
 int PackAbsoluteCoordinate(int x, int y, int z){
@@ -1725,14 +1729,16 @@ void UseLiquidContainer(uint32 CreatureID, Object Obj, Object Dest){
 		return;
 	}
 
+	// ===== 7.4: fluids affect only TOP creature if targeted; no auto-redirect to self. =====
+	/*
 	// NOTE(fusion): This is similar to the target picking logic for runes except
 	// we want to prioritize the user drinking the liquid, instead of otherwise
 	// throwing it on the ground.
-	if(!DestType.isCreatureContainer()){
+	if (!DestType.isCreatureContainer()) {
 		Object Help = GetFirstContainerObject(Dest.getContainer());
-		while(Help != NONE){
+		while (Help != NONE) {
 			ObjectType HelpType = Help.getObjectType();
-			if(HelpType.isCreatureContainer() && Help.getCreatureID() == CreatureID){
+			if (HelpType.isCreatureContainer() && Help.getCreatureID() == CreatureID) {
 				Dest = Help;
 				DestType = HelpType;
 				break;
@@ -1740,6 +1746,8 @@ void UseLiquidContainer(uint32 CreatureID, Object Obj, Object Dest){
 			Help = Help.getNextObject();
 		}
 	}
+	*/
+	// ===== end 7.4 fluids affect only TOP creature =====
 
 	// NOTE(fusion): Spill liquid.
 	if(!DestType.isCreatureContainer() || Dest.getCreatureID() != CreatureID){
@@ -1765,6 +1773,14 @@ void UseLiquidContainer(uint32 CreatureID, Object Obj, Object Dest){
 	if(Player == NULL){
 		error("UseLiquidContainer: Spieler %d existiert nicht.\n", CreatureID);
 		throw ERROR;
+	}
+
+	// 7.4 UH trap: for life/mana fluids, only the TOP creature on the tile can be targeted
+	TCreature *TargetCreature = NULL;
+	if(DestType.isCreatureContainer()){
+		Object top = GetFirstContainerObject(Dest.getContainer());
+		while(top != NONE && !top.getObjectType().isCreatureContainer()) top = top.getNextObject();
+		if(top == Dest){ TargetCreature = GetCreature(Dest); }
 	}
 
 	switch(LiquidType){
@@ -2436,6 +2452,21 @@ void CollisionEvent(Object Obj, Object Dest){
 					}
 
 					Object TeleportDest = GetMapContainer(TeleportDestX, TeleportDestY, TeleportDestZ);
+					// 7.4 rope: do not allow using rope if the destination rope spot is cluttered (any item other than ground/pool)
+					// Apply ONLY for rope item use: relative pure vertical up on a ROPESPOT.
+					if(HelpType.getFlag(TELEPORTRELATIVE) && HelpType.getFlag(ROPESPOT)){
+						int dx = DisplacementX, dy = DisplacementY, dz = DisplacementZ;
+						if(dx == 0 && dy == 0 && dz < 0){
+							Object H = GetFirstContainerObject(TeleportDest);
+							while(H != NONE){
+								ObjectType HT = H.getObjectType();
+								if(!HT.getFlag(BOTTOM) && !HT.getFlag(LIQUIDPOOL)){
+									throw NOTACCESSIBLE; // rope fails if rope spot is not clear
+								}
+								H = H.getNextObject();
+							}
+						}
+					}
 					MoveOneObject(Obj, TeleportDest);
 					GraphicalEffect(TeleportDestX, TeleportDestY, TeleportDestZ, TeleportEffect);
 				}else if(HelpType.getFlag(COLLISIONEVENT)){

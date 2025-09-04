@@ -835,44 +835,44 @@ void TSkillFed::Event(int Range){
 	}
 
 	int SecsPerHP = 12;
-	int SecsPerMana = 6;
+	int SecsPerMana = 12; // doubled (7.4)
 	switch(Profession){
 		case PROFESSION_NONE:
 		case PROFESSION_KNIGHT:{
 			SecsPerHP = 6;
-			SecsPerMana = 6;
+			SecsPerMana = 12; // doubled (7.4)
 			break;
 		}
 
 		case PROFESSION_PALADIN:{
 			SecsPerHP = 8;
-			SecsPerMana = 4;
+			SecsPerMana = 8; // doubled (7.4)
 			break;
 		}
 
 		case PROFESSION_SORCERER:
 		case PROFESSION_DRUID:{
 			SecsPerHP = 12;
-			SecsPerMana = 3;
+			SecsPerMana = 6; // doubled (7.4)
 			break;
 		}
 
 		case PROFESSION_ELITE_KNIGHT:{
 			SecsPerHP = 4;
-			SecsPerMana = 6;
+			SecsPerMana = 12; // doubled (7.4)
 			break;
 		}
 
 		case PROFESSION_ROYAL_PALADIN:{
 			SecsPerHP = 6;
-			SecsPerMana = 3;
+			SecsPerMana = 6; // doubled (7.4)
 			break;
 		}
 
 		case PROFESSION_MASTER_SORCERER:
 		case PROFESSION_ELDER_DRUID:{
 			SecsPerHP = 12;
-			SecsPerMana = 2;
+			SecsPerMana = 4; // doubled (7.4)
 			break;
 		}
 
@@ -890,7 +890,7 @@ void TSkillFed::Event(int Range){
 	}
 
 	if(Timer % SecsPerMana == 0){
-		Master->Skills[SKILL_MANA]->Change(2);
+		Master->Skills[SKILL_MANA]->Change(1); // 7.4 food mana nerf
 	}
 }
 

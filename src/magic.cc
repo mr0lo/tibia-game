@@ -3858,7 +3858,7 @@ void GetSpellbook(uint32 CharacterID, char *Buffer){
 			}
 
 			if(First){
-				sprintf(Help, "Spells for Level %d\n", Level);
+				sprintf(Help, "Spells for Magic Level %d\n", Level); // 7.4
 				strcat(Buffer, Help);
 				First = false;
 			}
@@ -4045,15 +4045,35 @@ void UseMagicItem(uint32 CreatureID, Object Obj, Object Dest){
 	}
 
 
-	// NOTE(fusion): This target picking logic is probably to avoid picking
-	// obviously wrong candidates when there are multiple creatures on a single
-	// field.
+	// 7.4 UH trap: for healing runes, only the TOP creature on the tile can be targeted
 	TCreature *Target = NULL;
 	bool Aggressive = IsAggressiveSpell(SpellNr);
 	{
-		if(Dest.getObjectType().isCreatureContainer()){
-			Target = GetCreature(Dest);
-		}
+		Object top = GetFirstContainerObject(Dest.getContainer());
+		if(!Aggressive && (SpellNr == 4 || SpellNr == 5)){
+			while(top != NONE && !top.getObjectType().isCreatureContainer()) top = top.getNextObject();
+			if(top != NONE && top.getObjectType().isCreatureContainer()){
+				Target = GetCreature(top);
+				Dest = top;
+			}
+		}else{
+			if(Dest.getObjectType().isCreatureContainer()){
+				Target = GetCreature(Dest);
+			}
+			Object Other = top;
+			while(Other != NONE){
+				if(Other.getObjectType().isCreatureContainer()){
+					uint32 OtherID = Other.getCreatureID();
+					if(Target == NULL
+							|| (Aggressive && OtherID != Actor->ID && OtherID != Target->ID)
+							|| (!Aggressive && OtherID == Actor->ID && OtherID != Target->ID)){
+						Target = GetCreature(OtherID);
+						Dest = Other;
+					}
+				}
+				Other = Other.getNextObject();
+			}
+		}	
 
 		Object Other = GetFirstContainerObject(Dest.getContainer());
 		while(Other != NONE){
@@ -4315,7 +4335,7 @@ void DrinkPotion(uint32 CreatureID, Object Obj){
 
 	int LiquidType = (int)Obj.getAttribute(CONTAINERLIQUIDTYPE);
 	if(LiquidType == LIQUID_MANA){
-		int Amount = ComputeDamage(NULL, 0, 100, 50);
+		int Amount = ComputeDamage(NULL, 0, 50, 25); // 7.4 manafluid avg 50
 		RefreshMana(Player, 0, 0, Amount);
 	}else if(LiquidType == LIQUID_LIFE){
 		int Amount = ComputeDamage(NULL, 0, 50, 25);
@@ -4326,7 +4346,7 @@ void DrinkPotion(uint32 CreatureID, Object Obj){
 	}
 
 	Change(Obj, CONTAINERLIQUIDTYPE, LIQUID_NONE);
-}
+ }
 
 // Magic Init Functions
 // =============================================================================
@@ -4360,13 +4380,10 @@ static void InitCircles(void){
 				Circle[Radius].x[PointIndex] = X - Center;
 				Circle[Radius].y[PointIndex] = Y - Center;
 				Circle[Radius].Count += 1;
-			}
-		}
-	}
-
-	// TODO(fusion): Probably check if we parsed the file successfully?
-	//if(IN.fail()) { throw "..."; }
-}
+		  }
+        }
+	 }
+  }		
 
 static TSpellList *CreateSpell(int SpellNr, ...){
 	ASSERT(SpellNr < NARRAY(SpellList));
@@ -4395,12 +4412,12 @@ static TSpellList *CreateSpell(int SpellNr, ...){
 				Spell->Syllable[SyllableCount] = (uint8)SyllableNr;
 				SyllableCount += 1;
 				break;
+			 }
 			}
-		}
-	}
+          }
 	va_end(ap);
 	return Spell;
-}
+  }
 
 static void InitSpells(void){
 	TSpellList *Spell;
