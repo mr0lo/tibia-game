@@ -269,10 +269,9 @@ void CMoveObject(TConnection *Connection, TReadBuffer *Buffer){
 		return;
 	}
 
-	// TODO(fusion): `RNum` usage in this context will only be used inside
-	// `GetObject` for indexing containers. For some reason I thought the
-	// Z coordinate was also used for that. Perhaps they're set to the same
-	// value.
+	// TODO(fusion): `RNum` is only used inside `ToDoMove` > `GetObject` to index
+	// into containers. For some reason I thought the Z coordinate was also used
+	// for that. Perhaps they're set to the same value.
 	if(OrigX != 0xFFFF){
 		RNum = 1;
 	}

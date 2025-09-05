@@ -587,7 +587,7 @@ void AngleShapeSpell(TCreature *Actor, int Angle, int Range, TImpact *Impact, in
 				continue;
 			}
 
-			if(!ThrowPossible(ActorX, ActorZ, ActorZ, FieldX, FieldY, FieldZ, 0)){
+			if(!ThrowPossible(ActorX, ActorY, ActorZ, FieldX, FieldY, FieldZ, 0)){
 				continue;
 			}
 
@@ -1041,10 +1041,15 @@ void CreateField(int x, int y, int z, int FieldType, uint32 Owner, bool Peaceful
 		Obj = Next;
 	}
 
-	// NOTE(fusion): Create field, at last.
-	Create(GetMapContainer(x, y, z),
-			GetSpecialObject(Meaning),
-			Owner);
+	try{
+		Create(GetMapContainer(x, y, z),
+				GetSpecialObject(Meaning),
+				Owner);
+	}catch(RESULT r){
+		if(r != DESTROYED){
+			throw;
+		}
+	}
 }
 
 void CreateField(TCreature *Actor, Object Target, int ManaPoints, int SoulPoints, int FieldType){
@@ -2371,7 +2376,10 @@ void CancelInvisibility(TCreature *Actor, Object Target, int ManaPoints, int Sou
 		Radius = NARRAY(Circle) - 1;
 	}
 
-	for(int R = 0; R <= Radius; R += 1){
+	// TODO(fusion): We don't include the origin (R=0) to avoid dispelling the
+	// caster as this is only used with the actor also being the target. We could
+	// instead just filter the actor while looping.
+	for(int R = 1; R <= Radius; R += 1){
 		int CirclePoints = Circle[R].Count;
 		for(int Point = 0; Point < CirclePoints; Point += 1){
 			int FieldX = TargetX + Circle[R].x[Point];
@@ -2906,7 +2914,7 @@ void ChangeProfession(TCreature *Actor, const char *Param){
 
 		// NOTE(fusion): Using the value 10 with `TPlayer::SetProfession` will
 		// cause the player to be promoted.
-		((TPlayer*)Actor)->SetProfession(10);
+		((TPlayer*)Actor)->SetProfession(PROFESSION_PROMOTION);
 	}else{
 		return;
 	}
@@ -3841,8 +3849,8 @@ void GetSpellbook(uint32 CharacterID, char *Buffer){
 			SpellNr < NARRAY(SpellList);
 			SpellNr += 1){
 		int Level = (int)SpellList[SpellNr].Level;
-		if(Level > MaxLevel){
-			Level = MaxLevel;
+         if(MaxLevel < Level){
+			MaxLevel = Level;
 		}
 	}
 
@@ -4176,7 +4184,7 @@ void UseMagicItem(uint32 CreatureID, Object Obj, Object Dest){
 			}
 
 			case 17:{
-				MassCreateField(Actor, Dest, 0, 0, FIELD_TYPE_FIRE, 3);
+				MassCreateField(Actor, Dest, 0, 0, FIELD_TYPE_FIRE, 2);
 				break;
 			}
 
@@ -4261,7 +4269,7 @@ void UseMagicItem(uint32 CreatureID, Object Obj, Object Dest){
 			}
 
 			case 55:{
-				MassCreateField(Actor, Dest, 0, 0, FIELD_TYPE_ENERGY, 3);
+				MassCreateField(Actor, Dest, 0, 0, FIELD_TYPE_ENERGY, 2);
 				break;
 			}
 
@@ -4288,7 +4296,7 @@ void UseMagicItem(uint32 CreatureID, Object Obj, Object Dest){
 			}
 
 			case 91:{
-				MassCreateField(Actor, Dest, 0, 0, FIELD_TYPE_POISON, 3);
+				MassCreateField(Actor, Dest, 0, 0, FIELD_TYPE_POISON, 2);
 				break;
 			}
 

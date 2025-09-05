@@ -1707,7 +1707,7 @@ void SendBuddyStatus(TConnection *Connection, uint32 CharacterID, bool Online){
 	}else{
 		SendByte(Connection, SV_CMD_BUDDY_OFFLINE);
 	}
-	SendWord(Connection, CharacterID);
+	SendQuad(Connection, CharacterID);
 	FinishSendData(Connection);
 }
 

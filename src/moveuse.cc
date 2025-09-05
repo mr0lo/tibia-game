@@ -693,6 +693,26 @@ void SaveDepotBox(uint32 CreatureID, int Nr, Object Con){
 	}
 }
 
+// TODO(fusion): Maybe move this to `strings.cc` or `utils.cc`?
+static int ReadLine(char *Dest, int DestCapacity, const char *Text, int ReadPos){
+	ASSERT(DestCapacity > 0);
+	int WritePos = 0;
+	while(Text[ReadPos] != 0 && Text[ReadPos] != '\n'){
+		if(WritePos < (DestCapacity - 1)){
+			Dest[WritePos] = Text[ReadPos];
+			WritePos += 1;
+		}
+		ReadPos += 1;
+	}
+
+	if(Text[ReadPos] == '\n'){
+		ReadPos += 1;
+	}
+
+	Dest[WritePos] = 0;
+	return ReadPos;
+}
+
 void SendMail(Object Obj){
 	if(!Obj.exists()){
 		error("SendMail: Übergebenes Objekt existiert nicht.\n");
@@ -733,31 +753,12 @@ void SendMail(Object Obj){
 	}
 
 
-	// TODO(fusion): Have some helper functions to read lines?
 	char Addressee[256];
 	char Town[256];
 	{
 		int ReadPos = 0;
-		int WritePos = 0;
-		while(Text[ReadPos] != 0 && Text[ReadPos] != '\n'){
-			if(WritePos < (int)(sizeof(Addressee) - 1)){
-				Addressee[WritePos] = Text[ReadPos];
-				WritePos += 1;
-			}
-			ReadPos += 1;
-		}
-		Addressee[WritePos] = 0;
-
-		WritePos = 0;
-		while(Text[ReadPos] != 0 && Text[ReadPos] != '\n'){
-			if(WritePos < (int)(sizeof(Town) - 1)){
-				Town[WritePos] = Text[ReadPos];
-				WritePos += 1;
-			}
-			ReadPos += 1;
-		}
-		Town[WritePos] = 0;
-
+		ReadPos = ReadLine(Addressee, sizeof(Addressee), Text, ReadPos);
+		ReadPos = ReadLine(Town,      sizeof(Town),      Text, ReadPos);
 		Trim(Addressee);
 		Trim(Town);
 	}
@@ -2345,7 +2346,7 @@ void SeparationEvent(Object Obj, Object Start){
 				ObjectType DoorTarget = HelpType.getFlag(LEVELDOOR)
 						? (int)HelpType.getAttribute(LEVELDOORTARGET)
 						: (int)HelpType.getAttribute(QUESTDOORTARGET);
-				if(DoorTarget.isMapContainer() || DoorTarget.getFlag(UNPASS)){
+				if(DoorTarget.isMapContainer() || !DoorTarget.getFlag(UNPASS)){
 					error("SeparationEvent: Zieltür für Tür %d nicht spezifiziert oder passierbar.\n",
 							HelpType.TypeID);
 					throw ERROR;

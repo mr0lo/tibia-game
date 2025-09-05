@@ -539,6 +539,7 @@ struct TCreature: TSkillBase {
 	void ToDoStart(void);
 	void ToDoYield(void);
 	void ToDoWait(int Delay);
+	void ToDoWaitUntil(uint32 Time);
 	void ToDoGo(int DestX, int DestY, int DestZ, bool MustReach, int MaxSteps);
 	void ToDoRotate(int Direction);
 	void ToDoMove(int ObjX, int ObjY, int ObjZ, ObjectType Type, uint8 RNum,
@@ -866,6 +867,7 @@ struct TPlayer: TCreature {
 	void ClearPlayerkillingMarks(void);
 	int GetPlayerkillingMark(TPlayer *Observer);
 	uint32 GetPartyLeader(bool CheckFormer);
+	bool InPartyWith(TPlayer *Other, bool CheckFormer);
 	void JoinParty(uint32 LeaderID);
 	void LeaveParty(void);
 	int GetPartyMark(TPlayer *Observer);

@@ -944,7 +944,7 @@ void TCreature::CreatureMoveStimulus(uint32 CreatureID, int Type){
 			SendResult(this->Connection, r);
 		}
 		this->ToDoClear();
-		this->ToDoWait(this->Combat.EarliestAttackTime);
+		this->ToDoWaitUntil(this->Combat.EarliestAttackTime);
 		this->ToDoStart();
 	}
 }

@@ -123,9 +123,9 @@ void Log(const char *ProtocolName, const char *Text, ...){
 		return;
 	}
 
-	bool WriteDate = (strcmp(ProtocolName, "bugreport") == 0)
-			|| (strcmp(ProtocolName, "client-error") == 0)
-			|| (strcmp(ProtocolName, "load") == 0);
+	bool WriteDate = (strcmp(ProtocolName, "bugreport") != 0)
+			&& (strcmp(ProtocolName, "client-error") != 0)
+			&& (strcmp(ProtocolName, "load") != 0);
 
 	char Output[256];
 	va_list ap;

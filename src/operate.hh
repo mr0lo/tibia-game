@@ -31,25 +31,10 @@ enum : int {
 	CHANNEL_TRADE				= 5,
 	CHANNEL_RLCHAT				= 6,
 	CHANNEL_HELP				= 7,
-
-	CHANNEL_PRIVATE_FIRST		= 8,
-	CHANNEL_FIRST				= 0,
-	CHANNEL_LAST				= 0xFFFF,
+	CHANNEL_PRIVATE				= 8,
+	PUBLIC_CHANNELS				= 8,
+	MAX_CHANNELS				= 0xFFFF,
 };
-
-#if 0
-// TODO(fusion): Use the original channel enum instead of the one above?
-enum CHANNEL: int {
-	GUILD_CHANNEL       = 0,
-	GAMEMASTER_CHANNEL  = 1,
-	TUTOR_CHANNEL       = 2,
-	REQUEST_QUEUE       = 3,
-	GAME_CHANNEL        = 4,
-	TRADE_CHANNEL       = 5,
-	REALLIFE_CHANNEL    = 6,
-	HELP_CHANNEL        = 7,
-};
-#endif
 
 struct TChannel {
 	TChannel(void);

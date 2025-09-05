@@ -405,7 +405,7 @@ Object GetObject(uint32 CreatureID, int x, int y, int z, int RNum, ObjectType Ty
 			if(Con != NONE){
 				Obj = GetContainerObject(Con, RNum);
 			}
-		}else if(y != 0){
+		}else if(y != INVENTORY_ANY){
 			error("GetObject: Ungültiger ContainerCode x=%d,y=%d,z=%d,RNum=%d,Type=%d.\n",
 					x, y, z, RNum, Type.TypeID);
 		}
@@ -1000,6 +1000,7 @@ bool SearchSpawnField(int *x, int *y, int *z, int Distance, bool Player){
 						}
 					}
 				}
+				Expanded = true;
 			}
 
 			if(LoginPossible && (!Player || !IsNoLogoutField(FieldX, FieldY, FieldZ))){
@@ -1009,6 +1010,7 @@ bool SearchSpawnField(int *x, int *y, int *z, int Distance, bool Player){
 				}
 
 				if(TieBreaker > BestTieBreaker){
+					Found = true;
 					BestX = FieldX;
 					BestY = FieldY;
 					BestTieBreaker = TieBreaker;
@@ -1051,58 +1053,26 @@ bool SearchFlightField(uint32 FugitiveID, uint32 PursuerID, int *x, int *y, int 
 		return false;
 	}
 
-	// NOTE(fusion): Fugitive's coordinates relative to the pursuer.
-	int FugitiveX = Fugitive->posx - Pursuer->posx;
-	int FugitiveY = Fugitive->posy - Pursuer->posy;
-
-	int Try[8] = {};
-	for(int i = 0; i < NARRAY(Try); i += 1){
-		Try[i] = DIRECTION_NONE;
-	}
-
-	if(FugitiveY <= 0){
-		Try[0] = DIRECTION_NORTH;
-	}
-
-	if(FugitiveX >= 0){
-		Try[1] = DIRECTION_EAST;
-	}
-
-	if(FugitiveY >= 0){
-		Try[2] = DIRECTION_SOUTH;
-	}
-
-	if(FugitiveX <= 0){
-		Try[3] = DIRECTION_WEST;
-	}
-
-	if(FugitiveX <= 0 && FugitiveY >= 0){
-		Try[4] = DIRECTION_SOUTHWEST;
-	}
-
-	if(FugitiveX >= 0 && FugitiveY >= 0){
-		Try[5] = DIRECTION_SOUTHEAST;
-	}
-
-	if(FugitiveX >= 0 && FugitiveY <= 0){
-		Try[6] = DIRECTION_NORTHEAST;
-	}
-
-	if(FugitiveX <= 0 && FugitiveY <= 0){
-		Try[7] = DIRECTION_NORTHWEST;
-	}
-
-	RandomShuffle(&Try[0], 4);
-	RandomShuffle(&Try[4], 4);
-	for(int i = 0; i < NARRAY(Try); i += 1){
-		if(Try[i] == DIRECTION_NONE){
+	int Dir[8];
+	Dir[0] = (Fugitive->posy <= Pursuer->posy)                                    ? DIRECTION_NORTH     : DIRECTION_NONE;
+	Dir[1] = (Fugitive->posx >= Pursuer->posx)                                    ? DIRECTION_EAST      : DIRECTION_NONE;
+	Dir[2] = (Fugitive->posy >= Pursuer->posy)                                    ? DIRECTION_SOUTH     : DIRECTION_NONE;
+	Dir[3] = (Fugitive->posx <= Pursuer->posx)                                    ? DIRECTION_WEST      : DIRECTION_NONE;
+	Dir[4] = (Fugitive->posx <= Pursuer->posx && Fugitive->posy >= Pursuer->posy) ? DIRECTION_SOUTHWEST : DIRECTION_NONE;
+	Dir[5] = (Fugitive->posx >= Pursuer->posx && Fugitive->posy >= Pursuer->posy) ? DIRECTION_SOUTHEAST : DIRECTION_NONE;
+	Dir[6] = (Fugitive->posx >= Pursuer->posx && Fugitive->posy <= Pursuer->posy) ? DIRECTION_NORTHEAST : DIRECTION_NONE;
+	Dir[7] = (Fugitive->posx <= Pursuer->posx && Fugitive->posy <= Pursuer->posy) ? DIRECTION_NORTHWEST : DIRECTION_NONE;
+	RandomShuffle(&Dir[0], 4);
+	RandomShuffle(&Dir[4], 4);
+	for(int i = 0; i < NARRAY(Dir); i += 1){
+		if(Dir[i] == DIRECTION_NONE){
 			continue;
 		}
 
 		int FieldX = Fugitive->posx;
 		int FieldY = Fugitive->posy;
 		int FieldZ = Fugitive->posz;
-		switch(Try[i]){
+		switch(Dir[i]){
 			case DIRECTION_NORTH:                  FieldY -= 1; break;
 			case DIRECTION_EAST:      FieldX += 1;              break;
 			case DIRECTION_SOUTH:                  FieldY += 1; break;
@@ -1112,7 +1082,7 @@ bool SearchFlightField(uint32 FugitiveID, uint32 PursuerID, int *x, int *y, int 
 			case DIRECTION_NORTHWEST: FieldX -= 1; FieldY -= 1; break;
 			case DIRECTION_NORTHEAST: FieldX += 1; FieldY -= 1; break;
 			default:{
-				error("SearchFlightField: Ungültige Richtung %d.\n", Try[i]);
+				error("SearchFlightField: Ungültige Richtung %d.\n", Dir[i]);
 				return false;
 			}
 		}
@@ -1120,6 +1090,7 @@ bool SearchFlightField(uint32 FugitiveID, uint32 PursuerID, int *x, int *y, int 
 		if(Fugitive->MovePossible(FieldX, FieldY, FieldZ, false, false)){
 			*x = FieldX;
 			*y = FieldY;
+			*z = FieldZ;
 			return true;
 		}
 	}
