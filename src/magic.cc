@@ -27,8 +27,8 @@ struct TSpellList {
 	int Amount;
 };
 
-static TSpellList SpellList[256];
-static TCircle Circle[10];
+TCircle Circle[9];
+TSpellList SpellList[256];
 
 static const char SpellSyllable[51][6] = {
 	"",
@@ -83,6 +83,18 @@ static const char SpellSyllable[51][6] = {
 	"",
 	"",
 };
+
+// =============================================================================
+// Function Declarations
+// =============================================================================
+static void DeleteRune(Object Obj);
+static void InitCircles(void);
+static TSpellList *CreateSpell(int SpellNr, ...);
+static void InitSpells(void);
+static int FindSpell(Object Obj);
+/* static bool IsAggressiveSpell(int SpellNr);
+static void CheckRuneLevel(TPlayer *Actor, int SpellNr); */
+
 
 static bool IsAggressionValid(TCreature *Actor, TCreature *Victim){
 	ASSERT(Actor != NULL && Victim != NULL);
@@ -903,22 +915,19 @@ int GetDirection(int dx, int dy){
 		}
 	}else{
 		// NOTE(fusion): This function uses the approximate tangent value, avoiding
-		// floating point calculations, for whatever reason. The tangent is unique
-		// and odd in the interval (-PI/2, +PI/2). We also need to recall that the
-		// Y-axis is inverted in Tibia, so we need to negate `dy`.
 		constexpr int Tangent_67_5 = 618;	// => 618 / 256 ~ 2.41 ~ tan(67.5 deg)
 		constexpr int Tangent_22_5 = 106;	// => 106 / 256 ~ 0.41 ~ tan(22.5 deg)
 		int Tangent = (-dy * 256) / dx;		// => (dy * 256) / dx ~ (dy / dx) * 256
 		if(Tangent >= Tangent_67_5){
-			Result = DIRECTION_NORTH;
+			Result = (dx < 0) ? DIRECTION_SOUTH     : DIRECTION_NORTH;
 		}else if(Tangent >= Tangent_22_5){
-			Result = (dx < 0) ? DIRECTION_NORTHWEST : DIRECTION_NORTHEAST;
+			Result = (dx < 0) ? DIRECTION_SOUTHWEST : DIRECTION_NORTHEAST;
 		}else if(Tangent >= -Tangent_22_5){
-			Result = (dx < 0) ? DIRECTION_WEST : DIRECTION_EAST;
+			Result = (dx < 0) ? DIRECTION_WEST      : DIRECTION_EAST;
 		}else if(Tangent >= -Tangent_67_5){
-			Result = (dx < 0) ? DIRECTION_SOUTHWEST : DIRECTION_SOUTHEAST;
+			Result = (dx < 0) ? DIRECTION_NORTHWEST : DIRECTION_SOUTHEAST;
 		}else{
-			Result = DIRECTION_SOUTH;
+			Result = (dx < 0) ? DIRECTION_NORTH     : DIRECTION_SOUTH;
 		}
 	}
 	return Result;
@@ -1041,6 +1050,7 @@ void CreateField(int x, int y, int z, int FieldType, uint32 Owner, bool Peaceful
 		Obj = Next;
 	}
 
+	// NOTE(fusion): Create field, at last.
 	try{
 		Create(GetMapContainer(x, y, z),
 				GetSpecialObject(Meaning),
@@ -2376,6 +2386,7 @@ void CancelInvisibility(TCreature *Actor, Object Target, int ManaPoints, int Sou
 		Radius = NARRAY(Circle) - 1;
 	}
 
+
 	// TODO(fusion): We don't include the origin (R=0) to avoid dispelling the
 	// caster as this is only used with the actor also being the target. We could
 	// instead just filter the actor while looping.
@@ -2413,7 +2424,7 @@ void CancelInvisibility(TCreature *Actor, Object Target, int ManaPoints, int Sou
 							Effect = EFFECT_BLOCK_HIT;
 
 							// NOTE(fusion): If the victim still has an illusion effect up, it
-							// it must come from an item and it seems there is a change to destroy
+							// must come from an item and it seems there is a chance to destroy
 							// it on pvp enforced worlds.
 							// TODO(fusion): This is probably an inlined function.
 							if(WorldType == PVP_ENFORCED){
@@ -2912,8 +2923,6 @@ void ChangeProfession(TCreature *Actor, const char *Param){
 			return;
 		}
 
-		// NOTE(fusion): Using the value 10 with `TPlayer::SetProfession` will
-		// cause the player to be promoted.
 		((TPlayer*)Actor)->SetProfession(PROFESSION_PROMOTION);
 	}else{
 		return;
@@ -3849,7 +3858,7 @@ void GetSpellbook(uint32 CharacterID, char *Buffer){
 			SpellNr < NARRAY(SpellList);
 			SpellNr += 1){
 		int Level = (int)SpellList[SpellNr].Level;
-         if(MaxLevel < Level){
+		if(MaxLevel < Level){
 			MaxLevel = Level;
 		}
 	}
@@ -3972,40 +3981,42 @@ int CheckForSpell(uint32 CreatureID, const char *Text){
 	}
 
 	int SpellNr = FindSpell(Syllable);
-	if(SpellNr != 0){
-		try{
-			switch(SpellType){
-				case 1: CharacterRightSpell(CreatureID, SpellNr, SpellStr); break;
-				case 2: RuneSpell(CreatureID, SpellNr); break;
-				case 3: CastSpell(CreatureID, SpellNr, SpellStr); break;
-				case 4: CastSpell(CreatureID, SpellNr, SpellStr); break;
-				case 5: AccountRightSpell(CreatureID, SpellNr, SpellStr); break;
-				default:{
-					error("CheckForSpell: Spruchklasse %d existiert nicht.\n", SpellType);
-					break;
-				}
-			}
-		}catch(RESULT r){
-			// TODO(fusion): `SpellFailed` is inlined in here but I think it's
-			// cleaner to keep it this way.
-			TCreature *Actor = GetCreature(CreatureID);
-			if(Actor == NULL){
-				error("SpellFailed: Kreatur existiert nicht.\n");
-			}else{
-				if(r != ERROR){
-					GraphicalEffect(Actor->posx, Actor->posy, Actor->posz, EFFECT_POFF);
-				}
-
-				if(Actor->Type == PLAYER){
-					SendResult(Actor->Connection, r);
-				}
-			}
-
-			return -SpellType;
-		}
+	if(SpellNr == 0){
+		return 0;
 	}
 
-	return SpellType;
+	try{
+		switch(SpellType){
+			case 1: CharacterRightSpell(CreatureID, SpellNr, SpellStr); break;
+			case 2: RuneSpell(CreatureID, SpellNr); break;
+			case 3: CastSpell(CreatureID, SpellNr, SpellStr); break;
+			case 4: CastSpell(CreatureID, SpellNr, SpellStr); break;
+			case 5: AccountRightSpell(CreatureID, SpellNr, SpellStr); break;
+			default:{
+				error("CheckForSpell: Spruchklasse %d existiert nicht.\n", SpellType);
+				break;
+			}
+		}
+
+		return SpellType;
+	}catch(RESULT r){
+		// TODO(fusion): `SpellFailed` is inlined in here but I think it's
+		// cleaner to keep it this way.
+		TCreature *Actor = GetCreature(CreatureID);
+		if(Actor == NULL){
+			error("SpellFailed: Kreatur existiert nicht.\n");
+		}else{
+			if(r != ERROR){
+				GraphicalEffect(Actor->posx, Actor->posy, Actor->posz, EFFECT_POFF);
+			}
+
+			if(Actor->Type == PLAYER){
+				SendResult(Actor->Connection, r);
+			}
+		}
+
+		return -SpellType;
+	}
 }
 
 static void DeleteRune(Object Obj){
@@ -4081,7 +4092,8 @@ void UseMagicItem(uint32 CreatureID, Object Obj, Object Dest){
 				}
 				Other = Other.getNextObject();
 			}
-		}	
+		}
+	}
 
 		Object Other = GetFirstContainerObject(Dest.getContainer());
 		while(Other != NONE){
@@ -4094,12 +4106,13 @@ void UseMagicItem(uint32 CreatureID, Object Obj, Object Dest){
 					Dest = Other;
 				}
 			}
+			
 			Other = Other.getNextObject();
 		}
-	}
+	//}  // ← ESTA LLAVE SOBRA - ELIMÍNALA
 
 	// NOTE(fusion): Rune check.
-	CheckRuneLevel(Actor, SpellNr);
+	CheckRuneLevel(Actor, SpellNr);  // ← Ahora está DENTRO de la función
 
 	if(Actor->EarliestSpellTime > ServerMilliseconds){
 		throw EXHAUSTED;
@@ -4354,7 +4367,7 @@ void DrinkPotion(uint32 CreatureID, Object Obj){
 	}
 
 	Change(Obj, CONTAINERLIQUIDTYPE, LIQUID_NONE);
- }
+}
 
 // Magic Init Functions
 // =============================================================================
@@ -4388,10 +4401,13 @@ static void InitCircles(void){
 				Circle[Radius].x[PointIndex] = X - Center;
 				Circle[Radius].y[PointIndex] = Y - Center;
 				Circle[Radius].Count += 1;
-		  }
-        }
-	 }
-  }		
+			}
+		}
+	}
+
+	// TODO(fusion): Probably check if we parsed the file successfully?
+	//if(IN.fail()) { throw "..."; }
+}
 
 static TSpellList *CreateSpell(int SpellNr, ...){
 	ASSERT(SpellNr < NARRAY(SpellList));
@@ -4420,12 +4436,12 @@ static TSpellList *CreateSpell(int SpellNr, ...){
 				Spell->Syllable[SyllableCount] = (uint8)SyllableNr;
 				SyllableCount += 1;
 				break;
-			 }
 			}
-          }
+		}
+	}
 	va_end(ap);
 	return Spell;
-  }
+}
 
 static void InitSpells(void){
 	TSpellList *Spell;

@@ -6,6 +6,12 @@
 
 struct TPlayerData;
 
+enum{
+	LOGIN_MESSAGE_ERROR			= SV_CMD_LOGIN_ERROR,
+	LOGIN_MESSAGE_PREMIUM		= SV_CMD_LOGIN_PREMIUM,
+	LOGIN_MESSAGE_WAITINGLIST	= SV_CMD_LOGIN_WAITINGLIST,
+};
+
 struct TWaitinglistEntry {
     TWaitinglistEntry *Next;
     char Name[30];

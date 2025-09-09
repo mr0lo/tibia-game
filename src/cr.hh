@@ -862,6 +862,7 @@ struct TPlayer: TCreature {
 	bool IsAttackJustified(uint32 VictimID);
 	void RecordAttack(uint32 VictimID);
 	void RecordMurder(uint32 VictimID);
+	void RecordDeath(uint32 AttackerID, int OldLevel, const char *Remark);
 	int CheckPlayerkilling(int Now);
 	void ClearAttacker(uint32 VictimID);
 	void ClearPlayerkillingMarks(void);

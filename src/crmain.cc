@@ -817,34 +817,16 @@ int TCreature::Damage(TCreature *Attacker, int Damage, int DamageType){
 		}
 
 		if(this->Type == PLAYER){
-			if(MurdererID != 0 && MurdererID != this->ID){
-				bool Justified = true;
-				if(IsCreaturePlayer(MurdererID)){
-					TPlayer *Murderer = GetPlayer(MurdererID);
-					if(Murderer != NULL){
-						Justified = Murderer->IsAttackJustified(this->ID);
-						Murderer->RecordMurder(this->ID);
-					}
-				}
-				CharacterDeathOrder(this, OldLevel, MurdererID, Remark, !Justified);
-			}
+			((TPlayer*)this)->RecordDeath(MurdererID, OldLevel, Remark);
 
 			uint32 MostDangerousID = this->Combat.GetMostDangerousAttacker();
 			if(MostDangerousID != 0
 					&& MostDangerousID != MurdererID
-					&& MostDangerousID != this->ID
 					&& IsCreaturePlayer(MostDangerousID)){
-				bool Justified = true;
-				TPlayer *MostDangerous = GetPlayer(MostDangerousID);
-				if(MostDangerous != NULL){
-					Justified = MostDangerous->IsAttackJustified(this->ID);
-					MostDangerous->RecordMurder(this->ID);
-				}
-
 				// TODO(fusion): The original function is confusing at this point
 				// but it seems correct that the remark is included only with the
 				// murderer.
-				CharacterDeathOrder(this, OldLevel, MostDangerousID, "", !Justified);
+				((TPlayer*)this)->RecordDeath(MostDangerousID, OldLevel, "");
 			}
 		}
 	}

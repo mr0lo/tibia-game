@@ -316,36 +316,33 @@ bool WriteToSocket(TConnection *Connection, uint8 *Buffer, int Size, int MaxSize
 		}
 	}
 
-	NetLoad(PACKET_AVERAGE_SIZE_OVERHEAD + Size + 2, true);
+	NetLoad(PACKET_AVERAGE_SIZE_OVERHEAD + Size, true);
 	return true;
 }
 
 bool SendLoginMessage(TConnection *Connection, int Type, const char *Message, int WaitingTime){
-	// TODO(fusion): Why do we return true on invalid parameters?
-
-	// TODO(fusion):
-	//	LOGIN_MESSAGE_ERROR = 20
-	//	LOGIN_MESSAGE_? = 21
-	//	LOGIN_MESSAGE_WAITING_LIST = 22
+     if(Type != LOGIN_MESSAGE_ERROR
+			&& Type != LOGIN_MESSAGE_PREMIUM
+			&& Type != LOGIN_MESSAGE_WAITINGLIST){
 
 	if(Type != 20 && Type != 21 && Type != 22){
 		error("SendLoginMessage: Ungültiger Meldungstyp %d.\n", Type);
-		return true;
+		return false;
 	}
 
 	if(Message == NULL){
 		error("SendLoginMessage: Message ist NULL.\n");
-		return true;
+		return false;
 	}
 
 	if(Type == 22 && (WaitingTime < 0 || WaitingTime > UINT8_MAX)){
 		error("SendLoginMessage: Ungültige Wartezeit %d.\n", WaitingTime);
-		return true;
+		return false;
 	}
 
 	if(strlen(Message) > 290){
 		error("SendLoginMessage: Botschaft zu lang (%s).\n", Message);
-		return true;
+		return false;
 	}
 
 	// IMPORTANT(fusion): This is doing the same thing as `SendData` but in a
@@ -358,14 +355,14 @@ bool SendLoginMessage(TConnection *Connection, int Type, const char *Message, in
 		WriteBuffer.writeWord(0); // DataSize
 		WriteBuffer.writeByte((uint8)Type);
 		WriteBuffer.writeString(Message);
-		if(Type == 22){
+		if(Type == LOGIN_MESSAGE_WAITINGLIST){
 			WriteBuffer.writeByte(WaitingTime);
 		}
 
 		return WriteToSocket(Connection, Data, WriteBuffer.Position, WriteBuffer.Size);
 	}catch(const char *str){
 		error("SendLoginMessage: Fehler beim Füllen des Puffers (%s)\n", str);
-		return true;
+		return false;
 	}
 }
 
@@ -608,7 +605,7 @@ int CheckWaitingTime(const char *Name, TConnection *Connection, bool FreeAccount
 		snprintf(Message, sizeof(Message),
 				"%s\n\nYou are at place %d on the waiting list.",
 				Reason, Position);
-		SendLoginMessage(Connection, 22, Message, WaitingTime);
+		SendLoginMessage(Connection, LOGIN_MESSAGE_WAITINGLIST, Message, WaitingTime);
 	}
 
 	return WaitingTime;
@@ -659,7 +656,7 @@ bool CallGameThread(TConnection *Connection){
 		if(tgkill(GetGameProcessID(), GetGameThreadID(), SIGUSR1) == -1){
 			error("CallGameThread: Can't send SIGUSR1 to thread %d/%d: (%d) %s\n",
 					GetGameProcessID(), GetGameThreadID(), errno, strerrordesc_np(errno));
-			SendLoginMessage(Connection, 20,
+			SendLoginMessage(Connection, LOGIN_MESSAGE_ERROR,
 					"The server is not online.\nPlease try again later.", -1);
 			return false;
 		}
@@ -684,7 +681,7 @@ TPlayerData *PerformRegistration(TConnection *Connection, char *PlayerName,
 	TQueryManagerPoolConnection QueryManagerConnection(&QueryManagerConnectionPool);
 	if(!QueryManagerConnection){
 		error("PerformRegistration: Kann Verbindung zum Query-Manager nicht herstellen.\n");
-		SendLoginMessage(Connection, 20, "Internal error, closing connection.", -1);
+		SendLoginMessage(Connection, LOGIN_MESSAGE_ERROR, "Internal error, closing connection.", -1);
 		return NULL;
 	}
 
@@ -717,7 +714,7 @@ TPlayerData *PerformRegistration(TConnection *Connection, char *PlayerName,
 
 		case 1:{
 			print(3, "Spieler existiert nicht.\n");
-			SendLoginMessage(Connection, 20,
+			SendLoginMessage(Connection, LOGIN_MESSAGE_ERROR,
 					"Character doesn't exist.\n"
 					"Create a new character on the Tibia website\n"
 					"at \"www.tibia.com\".", -1);
@@ -726,7 +723,7 @@ TPlayerData *PerformRegistration(TConnection *Connection, char *PlayerName,
 
 		case 2:{
 			print(3, "Spieler wurde gelöscht.\n");
-			SendLoginMessage(Connection, 20,
+			SendLoginMessage(Connection, LOGIN_MESSAGE_ERROR,
 					"Character doesn't exist.\n"
 					"Create a new character on the Tibia website.", -1);
 			return NULL;
@@ -734,7 +731,7 @@ TPlayerData *PerformRegistration(TConnection *Connection, char *PlayerName,
 
 		case 3:{
 			print(3, "Spieler lebt nicht auf dieser Welt.\n");
-			SendLoginMessage(Connection, 20,
+			SendLoginMessage(Connection, LOGIN_MESSAGE_ERROR,
 					"Character doesn't live on this world.\n"
 					"Please login on the right world.", -1);
 			return NULL;
@@ -742,7 +739,7 @@ TPlayerData *PerformRegistration(TConnection *Connection, char *PlayerName,
 
 		case 4:{
 			print(3, "Spieler ist nicht eingeladen.\n");
-			SendLoginMessage(Connection, 20,
+			SendLoginMessage(Connection, LOGIN_MESSAGE_ERROR,
 					"This world is private and you have not been invited to play on it.", -1);
 			return NULL;
 		}
@@ -750,7 +747,7 @@ TPlayerData *PerformRegistration(TConnection *Connection, char *PlayerName,
 		case 6:{
 			Log("game", "Falsches Paßwort für Spieler %s; Login von %s.\n",
 					PlayerName, Connection->GetIPAddress());
-			SendLoginMessage(Connection, 20,
+			SendLoginMessage(Connection, LOGIN_MESSAGE_ERROR,
 					"Accountnumber or password is not correct.", -1);
 			return NULL;
 		}
@@ -758,14 +755,14 @@ TPlayerData *PerformRegistration(TConnection *Connection, char *PlayerName,
 		case 7:{
 			Log("game", "Spieler %s blockiert; Login von %s.\n",
 					PlayerName, Connection->GetIPAddress());
-			SendLoginMessage(Connection, 20,
+			SendLoginMessage(Connection, LOGIN_MESSAGE_ERROR,
 					"Account disabled for five minutes. Please wait.", -1);
 			return NULL;
 		}
 
 		case 8:{
 			Log("game", "Account von Spieler %s wurde gelöscht.\n", PlayerName);
-			SendLoginMessage(Connection, 20,
+			SendLoginMessage(Connection, LOGIN_MESSAGE_ERROR,
 					"Accountnumber or password is not correct.", -1);
 			return NULL;
 		}
@@ -773,35 +770,35 @@ TPlayerData *PerformRegistration(TConnection *Connection, char *PlayerName,
 		case 9:{
 			Log("game", "IP-Adresse %s für Spieler %s blockiert.\n",
 					Connection->GetIPAddress(), PlayerName);
-			SendLoginMessage(Connection, 20,
+			SendLoginMessage(Connection, LOGIN_MESSAGE_ERROR,
 					"IP address blocked for 30 minutes. Please wait.", -1);
 			return NULL;
 		}
 
 		case 10:{
 			print(3, "Account ist verbannt.\n");
-			SendLoginMessage(Connection, 20,
+			SendLoginMessage(Connection, LOGIN_MESSAGE_ERROR,
 					"Your account is banished.", -1);
 			return NULL;
 		}
 
 		case 11:{
 			print(3, "Character muss umbenannt werden.\n");
-			SendLoginMessage(Connection, 20,
+			SendLoginMessage(Connection, LOGIN_MESSAGE_ERROR,
 					"Your character is banished because of his/her name.", -1);
 			return NULL;
 		}
 
 		case 12:{
 			print(3, "IP-Adresse ist gesperrt.\n");
-			SendLoginMessage(Connection, 20,
+			SendLoginMessage(Connection, LOGIN_MESSAGE_ERROR,
 					"Your IP address is banished.", -1);
 			return NULL;
 		}
 
 		case 13:{
 			print(3, "Schon andere Charaktere desselben Accounts eingeloggt.\n");
-			SendLoginMessage(Connection, 20,
+			SendLoginMessage(Connection, LOGIN_MESSAGE_ERROR,
 					"You may only login with one character\n"
 					"of your account at the same time.", -1);
 			return NULL;
@@ -809,26 +806,26 @@ TPlayerData *PerformRegistration(TConnection *Connection, char *PlayerName,
 
 		case 14:{
 			print(3, "Login mit Gamemaster-Client auf Nicht-Gamemaster-Account.\n");
-			SendLoginMessage(Connection, 20,
+			SendLoginMessage(Connection, LOGIN_MESSAGE_ERROR,
 					"You may only login with a Gamemaster account.", -1);
 			return NULL;
 		}
 
 		case 15:{
 			print(3, "Falsche Accountnummer %u für %s.\n", AccountID, PlayerName);
-			SendLoginMessage(Connection, 20,
+			SendLoginMessage(Connection, LOGIN_MESSAGE_ERROR,
 					"Login failed due to corrupt data.", -1);
 			return NULL;
 		}
 
 		case -1:{
-			SendLoginMessage(Connection, 20, "Internal error, closing connection.", -1);
+			SendLoginMessage(Connection, LOGIN_MESSAGE_ERROR, "Internal error, closing connection.", -1);
 			return NULL;
 		}
 
 		default:{
 			error("PerformRegistration: Unbekannter Rückgabewert vom QueryManager.\n");
-			SendLoginMessage(Connection, 20, "Internal error, closing connection.", -1);
+			SendLoginMessage(Connection, LOGIN_MESSAGE_ERROR, "Internal error, closing connection.", -1);
 			return NULL;
 		}
 	}
@@ -843,7 +840,7 @@ TPlayerData *PerformRegistration(TConnection *Connection, char *PlayerName,
 	// `decrementIsOnline`.
 	if(AccountID == 0){
 		error("PerformRegistration: Spieler %s wurde noch keinem Account zugewiesen.\n", PlayerName);
-		SendLoginMessage(Connection, 20,
+		SendLoginMessage(Connection, LOGIN_MESSAGE_ERROR,
 				"Character is not assigned to an account.\n"
 				"Perform this on the Tibia website\n"
 				"at \"www.tibia.com\".", -1);
@@ -868,7 +865,7 @@ TPlayerData *PerformRegistration(TConnection *Connection, char *PlayerName,
 	if(PlayerData == NULL){
 		error("PerformRegistration: Kann keinen Slot für Spielerdaten zuweisen.\n");
 		QueryManagerConnection->decrementIsOnline(CharacterID);
-		SendLoginMessage(Connection, 20,
+		SendLoginMessage(Connection, LOGIN_MESSAGE_ERROR,
 				"There are too many players online.\n"
 				"Please try again later.", -1);
 		return NULL;
@@ -927,7 +924,7 @@ bool HandleLogin(TConnection *Connection){
 		if(!PrivateKey.decrypt(AsymmetricData)){
 			RSAMutex.up();
 			error("HandleLogin: Fehler beim Entschlüsseln.\n");
-			SendLoginMessage(Connection, 20,
+			SendLoginMessage(Connection, LOGIN_MESSAGE_ERROR,
 					"Login failed due to corrupt data.", -1);
 			return false;
 		}
@@ -944,20 +941,20 @@ bool HandleLogin(TConnection *Connection){
 		ReadBuffer.readString(PlayerPassword, sizeof(PlayerPassword));
 	}catch(const char *str){
 		print(3, "Fehler beim Auslesen der Login-Daten (%s).\n", str);
-		SendLoginMessage(Connection, 20,
+		SendLoginMessage(Connection, LOGIN_MESSAGE_ERROR,
 				"Login failed due to corrupt data.",-1);
 		return false;
 	}
 
 	if(PlayerName[0] == 0){
-		SendLoginMessage(Connection, 20,
+		SendLoginMessage(Connection, LOGIN_MESSAGE_ERROR,
 				"You must enter a character name.", -1);
 		return false;
 	}
 
 	if(TerminalType < 0 || TerminalType >= NARRAY(TERMINALVERSION)
 			|| TERMINALVERSION[TerminalType] != TerminalVersion){
-		SendLoginMessage(Connection, 20,
+		SendLoginMessage(Connection, LOGIN_MESSAGE_ERROR,
 				"Your terminal version is too old.\n"
 				"Please get a new version at\n"
 				"http://www.tibia.com.", -1);
@@ -965,21 +962,21 @@ bool HandleLogin(TConnection *Connection){
 	}
 
 	if(!GameRunning()){
-		SendLoginMessage(Connection, 20,
+		SendLoginMessage(Connection, LOGIN_MESSAGE_ERROR,
 				"The server is not online.\n"
 				"Please try again later.", -1);
 		return false;
 	}
 
 	if(GameStarting()){
-		SendLoginMessage(Connection, 20,
+		SendLoginMessage(Connection, LOGIN_MESSAGE_ERROR,
 				"The game is just starting.\n"
 				"Please try again later.", -1);
 		return false;
 	}
 
 	if(GameEnding()){
-		SendLoginMessage(Connection, 20,
+		SendLoginMessage(Connection, LOGIN_MESSAGE_ERROR,
 				"The game is just going down.\n"
 				"Please try again later.", -1);
 		return false;
@@ -1001,7 +998,7 @@ bool HandleLogin(TConnection *Connection){
 			int WaitingTime = (int)(NextTry - RoundNr);
 			Log("queue", "%s meldet sich %d Sekunden zu früh an.\n",
 					PlayerName, WaitingTime);
-			SendLoginMessage(Connection, 22,
+			SendLoginMessage(Connection, LOGIN_MESSAGE_WAITINGLIST,
 					"It's not your turn yet.", WaitingTime);
 			return false;
 		}
@@ -1044,7 +1041,7 @@ bool HandleLogin(TConnection *Connection){
 		bool PremiumOnly = (MaxPlayers == PremiumPlayerBuffer)
 				|| (Newbie && MaxNewbies == PremiumNewbieBuffer);
 		if(!BlockLogin && FreeAccount && PremiumOnly){
-			SendLoginMessage(Connection, 20,
+			SendLoginMessage(Connection, LOGIN_MESSAGE_ERROR,
 					"Only players with premium accounts\n"
 					"are allowed to enter this world.", -1);
 			BlockLogin = true;
@@ -1093,7 +1090,7 @@ bool HandleLogin(TConnection *Connection){
 		WriteBuffer.writeQuad(Slot->CharacterID);
 	}catch(const char *str){
 		error("HandleLogin: Fehler beim Zusammenbauen des Login-Pakets (%s).\n", str);
-		SendLoginMessage(Connection, 20,
+		SendLoginMessage(Connection, LOGIN_MESSAGE_ERROR,
 				"Internal error, closing connection.",-1);
 		return false;
 	}
@@ -1161,7 +1158,7 @@ bool ReceiveCommand(TConnection *Connection){
 			// NOTE(fusion): It doesn't make sense to call `SendLoginMessage` before
 			// the key exchange has completed, which happens after login.
 			if(Connection->State != CONNECTION_CONNECTED){
-				SendLoginMessage(Connection, 20,
+				SendLoginMessage(Connection, LOGIN_MESSAGE_ERROR,
 					"Internal error, closing connection.", -1);
 			}
 			return false;

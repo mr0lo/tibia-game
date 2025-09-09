@@ -72,11 +72,9 @@ typedef size_t usize;
 #	define ASSERT(expr) ((void)(expr))
 #endif
 
-// TODO(fusion): We should re-implement the multi-process structure used by the
-// original code but only for reference. Making it compile on Windows shouldn't
-// be too difficult either. Overall this design is outdated and should be reviewed.
-//	Nevertheless, we should focus on getting it working as intended, on the target
-// platform (which is Linux 32-bit) before attempting to refine it.
+// NOTE(fusion): The server will only compile on Linux due to a few Linux specific
+// features being used. Making it compile on Windows shouldn't be too difficult but
+// would require a few design changes.
 STATIC_ASSERT(OS_LINUX);
 #include <errno.h>
 #include <unistd.h>

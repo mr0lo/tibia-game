@@ -31,6 +31,7 @@ enum : int {
 	CHANNEL_TRADE				= 5,
 	CHANNEL_RLCHAT				= 6,
 	CHANNEL_HELP				= 7,
+
 	CHANNEL_PRIVATE				= 8,
 	PUBLIC_CHANNELS				= 8,
 	MAX_CHANNELS				= 0xFFFF,

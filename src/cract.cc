@@ -550,8 +550,7 @@ void TCreature::Move(Object Obj, int DestX, int DestY, int DestZ, uint8 Count){
 		}
 
 		try{
-			
-		  ::Move(this->ID, Obj, DestCon, MoveCount, false, DestObj);
+			::Move(this->ID, Obj, DestCon, MoveCount, false, DestObj);
 		}catch(RESULT r){
 			// NOTE(fusion): Attempt to exchange inventory items.
 			if(DestY >= INVENTORY_FIRST && DestY <= INVENTORY_LAST

@@ -8,27 +8,19 @@
 #include <dirent.h>
 
 // 7.4: screen-based activation range (client visible area)
-
-#ifndef VIEW_RANGE_X
 static const int VIEW_RANGE_X = 8; // left/right
-#endif
-#ifndef VIEW_RANGE_Y
 static const int VIEW_RANGE_Y = 6; // up/down
-#endif
 
 static vector<TNonplayer*> NonplayerList(0, 10000, 1000, NULL);
 static int FirstFreeNonplayer;
+
+extern int FirstFreePlayer;
+extern TPlayer** PlayerList;
 
 static vector<TMonsterhome> Monsterhome(1, 5000, 1000);
 static int Monsterhomes;
 
 static store<TBehaviourNode, 256> BehaviourNodeTable;
-
-using namespace std;
-
-// Lista global de jugadores (usando el vector personalizado del repo)
-vector<TPlayer*> PlayerList(0, 10000, 1000, NULL);
-int FirstFreePlayer = 0;
 
 // Behaviour Database
 // =============================================================================
@@ -2300,34 +2292,30 @@ void TMonster::DamageStimulus(uint32 AttackerID, int Damage, int DamageType){
 }
 
 void TMonster::IdleStimulus(void){
-    if(this->LockToDo || this->LoggingOut){
-        return;
-    }
+	if(this->LockToDo || this->LoggingOut){
+		return;
+	}
 
-    if(this->LifeEndRound != 0 && this->LifeEndRound <= RoundNr){
-        print(3, "Lebenszeit für %s abgelaufen.\n", this->Name);
-        this->StartLogout(true, true);
-        this->State = SLEEPING;
-    }
-
-    // 7.4: monsters do not move on their own when there's nobody nearby on the same floor.
-    if(this->Target == 0){
-        bool playerNearby = false;
-        for(int i = 0; i < FirstFreePlayer; ++i){
-            TPlayer *Pl = *PlayerList.at(i);
-            if(Pl && Pl->posz == this->posz){
-                int dx = std::abs(Pl->posx - this->posx);
-                int dy = std::abs(Pl->posy - this->posy);
-                if(dx <= VIEW_RANGE_X && dy <= VIEW_RANGE_Y){
-                    playerNearby = true;
-                    break;
-                }
-            }
-        }
-        if(!playerNearby){
-            return;
-        }
-    }
+	if(this->LifeEndRound != 0 && this->LifeEndRound <= RoundNr){
+		print(3, "Lebenszeit für %s abgelaufen.\n", this->Name);
+		this->StartLogout(true, true);
+		this->State = SLEEPING;
+	// 7.4: monsters do not move on their own when there's nobody nearby on the same floor.
+	// If no player is on the same Z within screen-based activation range and there is no active target, remain idle.
+	if(this->Target == 0 && !this->IsPlayerControlled()){
+		bool playerNearby = false;
+		for(int i = 0; i < FirstFreePlayer; ++i){
+			TPlayer *Pl = PlayerList[i];
+			if(Pl && Pl->posz == this->posz){
+				int dx = std::abs(Pl->posx - this->posx);
+				int dy = std::abs(Pl->posy - this->posy);
+				if(dx <= VIEW_RANGE_X && dy <= VIEW_RANGE_Y){ playerNearby = true; break; }
+			}
+		}
+		if(!playerNearby){ return; }
+	}
+		return;
+	}
 
 	if(this->Master != 0){
 		TCreature *Master = GetCreature(this->Master);
@@ -2648,7 +2636,7 @@ void TMonster::IdleStimulus(void){
 										Animation, Impact, Effect);
 							}
 							break;
-						}
+					}
 
 						case SHAPE_ORIGIN:{
 							int Radius = SpellData->ShapeParam1;
@@ -2669,7 +2657,7 @@ void TMonster::IdleStimulus(void){
 										Animation, Radius, Impact, Effect);
 							}
 							break;
-						}
+					}
 
 						case SHAPE_ANGLE:{
 							if(Target != NULL){

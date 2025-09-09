@@ -7,9 +7,6 @@ uint32 RoundNr = 0;
 
 uint32 ServerMilliseconds = 0;
 
-// NOTE(fusion): This isn't strictly required because each server process is
-// single threaded and don't share static memory, which is what the result of
-// the regular `localtime` function uses.
 struct tm GetLocalTimeTM(time_t t){
 	struct tm result;
 #if COMPILER_MSVC

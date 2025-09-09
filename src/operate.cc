@@ -2083,11 +2083,10 @@ void Look(uint32 CreatureID, Object Obj){
 
 			uint16 HouseID = GetHouseID(ObjX, ObjY, ObjZ);
 			if(HouseID != 0){
-				const char *HouseOwner = GetHouseOwner(HouseID);
+			    const char *HouseOwner = GetHouseOwner(HouseID);
 				if(HouseOwner == NULL || HouseOwner[0] == 0){
 					HouseOwner = "Nobody";
 				}
-
 				snprintf(Help, sizeof(Help),
 						". It belongs to house '%s'. %s owns this house",
 						GetHouseName(HouseID), HouseOwner);
@@ -2242,8 +2241,7 @@ void Talk(uint32 CreatureID, int Mode, const char *Addressee, const char *Text, 
 			if(Player->EarliestYellRound > RoundNr){
 				throw EXHAUSTED;
 			}
-
-			Player->EarliestYellRound = RoundNr + 30;
+            Player->EarliestYellRound = RoundNr + 30;
 			strcpy(YellBuffer, Text);
 			strUpper(YellBuffer);
 			Text = YellBuffer;
@@ -4079,6 +4077,7 @@ void JoinParty(uint32 GuestID, uint32 HostID){
 	}
 
 	if(Guest->GetPartyLeader(true) != 0){
+		bool SameParty = Guest->GetPartyLeader(true) == Host->GetPartyLeader(true);
 		SendMessage(Guest->Connection, TALK_INFO_MESSAGE,
 				"You are already member of %s party.",
 				(Guest->InPartyWith(Host, true) ? "this" : "a"));

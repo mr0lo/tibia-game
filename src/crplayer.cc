@@ -1,4 +1,5 @@
 #include "cr.hh"
+#include "magic.hh"
 #include "config.hh"
 #include "houses.hh"
 #include "info.hh"
@@ -7,7 +8,6 @@
 #include "query.hh"
 #include "threads.hh"
 #include "writer.hh"
-#include "magic.hh"
 
 static Semaphore PlayerMutex(1);
 static vector<TPlayer*> PlayerList(0, 100, 10, NULL);
@@ -1012,7 +1012,7 @@ void TPlayer::ClearProfession(void){
 }
 
 void TPlayer::SetProfession(uint8 Profession){
-	if(Profession == PROFESSION_PROMOTION){
+	if(this->Profession >= PROFESSION_PROMOTION){
 		if(this->Profession == PROFESSION_NONE){
 			error("TPlayer::SetProfession: Spieler hat noch keinen Beruf für Veredelung.\n");
 			return;
@@ -1545,6 +1545,20 @@ void TPlayer::RecordMurder(uint32 VictimID){
 	}
 }
 
+void TPlayer::RecordDeath(uint32 AttackerID, int OldLevel, const char *Remark){
+	bool Justified = true;
+	if(AttackerID != 0 && AttackerID != this->ID && IsCreaturePlayer(AttackerID)){
+		TPlayer *Attacker = GetPlayer(AttackerID);
+		if(Attacker == NULL){
+			return;
+		}
+
+		Justified = Attacker->IsAttackJustified(this->ID);
+		Attacker->RecordMurder(this->ID);
+	}
+	CharacterDeathOrder(this, OldLevel, AttackerID, Remark, !Justified);
+}
+
 int TPlayer::CheckPlayerkilling(int Now){
 	int LastDay = 0;
 	int LastWeek = 0;
@@ -1690,13 +1704,6 @@ bool TPlayer::InPartyWith(TPlayer *Other, bool CheckFormer){
 		&& this->GetPartyLeader(CheckFormer) == Other->GetPartyLeader(CheckFormer);
 }
 
-uint32 TPlayer::GetPartyLeader(bool CheckFormer){
-	if(this->PartyLeavingRound == 0 || (CheckFormer && (this->PartyLeavingRound + 5) >= RoundNr)){
-		return this->PartyLeader;
-	}else{
-		return 0;
-	}
-}
 
 void TPlayer::JoinParty(uint32 LeaderID){
 	this->PartyLeavingRound = 0;

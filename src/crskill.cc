@@ -482,7 +482,6 @@ int TSkillProbe::GetExpForLevel(int Level){
 
 	int FactorPercent = this->FactorPercent;
 	if(FactorPercent < 1050){
-		
 		if(FactorPercent != 1000){
 			const char *MasterName = (this->Master != NULL ? this->Master->Name : "---");
 			error("TSkillProbe::GetExpForLevel: Ungültiger FactorPercent-Wert %d bei %s."
