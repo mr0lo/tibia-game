@@ -457,12 +457,12 @@ int TCreature::Damage(TCreature *Attacker, int Damage, int DamageType){
 		return 0;
 	}
 
-	if(this->Type == PLAYER){
-		if(this->Connection != NULL && Attacker != NULL){
+	if(Attacker != NULL && this->Type == PLAYER){
+		if(this->Connection != NULL){
 			SendMarkCreature(this->Connection, Attacker->ID, COLOR_BLACK);
 		}
 
-		if(Attacker != NULL && Attacker->Type == PLAYER
+		if(Attacker->Type == PLAYER
 				&& DamageType != DAMAGE_POISON_PERIODIC
 				&& DamageType != DAMAGE_FIRE_PERIODIC
 				&& DamageType != DAMAGE_ENERGY_PERIODIC){
@@ -479,7 +479,15 @@ int TCreature::Damage(TCreature *Attacker, int Damage, int DamageType){
 
 		uint32 MasterID = Attacker->GetMaster();
 		if(MasterID != 0){
-			Responsible = GetCreature(MasterID);
+			// NOTE(fusion): This is very subtle but we could hit a case where the
+			// master logs out or dies but the summon has a ToDoAttack queued, in
+			// which case it would try to attack before checking whether it should
+			// despawn in `TMonster::IdleStimulus`, causing `Responsible` to be NULL
+			// even though `Attacker` is not.
+			TCreature *Master = GetCreature(MasterID);
+			if(Master != NULL){
+				Responsible = Master;
+			}
 		}
 
 		Attacker->BlockLogout(60, this->Type == PLAYER);
@@ -653,8 +661,8 @@ int TCreature::Damage(TCreature *Attacker, int Damage, int DamageType){
 	}
 
 	this->Skills[SKILL_HITPOINTS]->Change(-Damage);
-	if(Responsible != NULL){
-		ASSERT(Attacker != NULL);
+	if(Attacker != NULL){
+		ASSERT(Responsible != NULL);
 		if(Responsible == Attacker){
 			this->Combat.AddDamageToCombatList(Attacker->ID, Damage);
 		}else{
@@ -817,34 +825,16 @@ int TCreature::Damage(TCreature *Attacker, int Damage, int DamageType){
 		}
 
 		if(this->Type == PLAYER){
-			if(MurdererID != 0 && MurdererID != this->ID){
-				bool Justified = true;
-				if(IsCreaturePlayer(MurdererID)){
-					TPlayer *Murderer = GetPlayer(MurdererID);
-					if(Murderer != NULL){
-						Justified = Murderer->IsAttackJustified(this->ID);
-						Murderer->RecordMurder(this->ID);
-					}
-				}
-				CharacterDeathOrder(this, OldLevel, MurdererID, Remark, !Justified);
-			}
+			((TPlayer*)this)->RecordDeath(MurdererID, OldLevel, Remark);
 
 			uint32 MostDangerousID = this->Combat.GetMostDangerousAttacker();
 			if(MostDangerousID != 0
 					&& MostDangerousID != MurdererID
-					&& MostDangerousID != this->ID
 					&& IsCreaturePlayer(MostDangerousID)){
-				bool Justified = true;
-				TPlayer *MostDangerous = GetPlayer(MostDangerousID);
-				if(MostDangerous != NULL){
-					Justified = MostDangerous->IsAttackJustified(this->ID);
-					MostDangerous->RecordMurder(this->ID);
-				}
-
 				// TODO(fusion): The original function is confusing at this point
 				// but it seems correct that the remark is included only with the
 				// murderer.
-				CharacterDeathOrder(this, OldLevel, MostDangerousID, "", !Justified);
+				((TPlayer*)this)->RecordDeath(MostDangerousID, OldLevel, "");
 			}
 		}
 	}
@@ -944,7 +934,7 @@ void TCreature::CreatureMoveStimulus(uint32 CreatureID, int Type){
 			SendResult(this->Connection, r);
 		}
 		this->ToDoClear();
-		this->ToDoWait(this->Combat.EarliestAttackTime);
+		this->ToDoWaitUntil(this->Combat.EarliestAttackTime);
 		this->ToDoStart();
 	}
 }

@@ -202,7 +202,7 @@ bool TConnection::JoinGame(TReadBuffer *Buffer){
 	}
 
 	this->ClearKnownCreatureTable(false);
-	
+
 	try{
 		this->TerminalType = (int)Buffer->readWord();
 		this->TerminalVersion = (int)Buffer->readWord();

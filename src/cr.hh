@@ -143,8 +143,8 @@ struct TPlayerData {
 	int MurderTimestamps[20];
 	uint8 *Inventory;
 	int InventorySize;
-	uint8 *Depot[9];
-	int DepotSize[9];
+	uint8 *Depot[MAX_DEPOTS];
+	int DepotSize[MAX_DEPOTS];
 	uint32 AccountID;
 	int Sex;
 	char Name[30];
@@ -539,6 +539,7 @@ struct TCreature: TSkillBase {
 	void ToDoStart(void);
 	void ToDoYield(void);
 	void ToDoWait(int Delay);
+	void ToDoWaitUntil(uint32 Time);
 	void ToDoGo(int DestX, int DestY, int DestZ, bool MustReach, int MaxSteps);
 	void ToDoRotate(int Direction);
 	void ToDoMove(int ObjX, int ObjY, int ObjZ, ObjectType Type, uint8 RNum,
@@ -861,11 +862,13 @@ struct TPlayer: TCreature {
 	bool IsAttackJustified(uint32 VictimID);
 	void RecordAttack(uint32 VictimID);
 	void RecordMurder(uint32 VictimID);
+	void RecordDeath(uint32 AttackerID, int OldLevel, const char *Remark);
 	int CheckPlayerkilling(int Now);
 	void ClearAttacker(uint32 VictimID);
 	void ClearPlayerkillingMarks(void);
 	int GetPlayerkillingMark(TPlayer *Observer);
 	uint32 GetPartyLeader(bool CheckFormer);
+	bool InPartyWith(TPlayer *Other, bool CheckFormer);
 	void JoinParty(uint32 LeaderID);
 	void LeaveParty(void);
 	int GetPartyMark(TPlayer *Observer);

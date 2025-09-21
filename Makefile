@@ -8,7 +8,7 @@ LFLAGS = -Wl,-t -lcrypto
 
 DEBUG ?= 0
 ifneq ($(DEBUG), 0)
-	CFLAGS += -g -Og
+	CFLAGS += -g -Og -DENABLE_ASSERTIONS=1
 else
 	CFLAGS += -O2
 endif

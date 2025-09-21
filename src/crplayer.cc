@@ -282,7 +282,7 @@ TPlayer::~TPlayer(void){
 			}
 
 			// NOTE(fusion): This is used to reset skills back to default. See
-			// `LoadData`.
+			// `TPlayer::LoadData`.
 			for(int SkillNr = 0;
 					SkillNr < NARRAY(PlayerData->Minimum);
 					SkillNr += 1){
@@ -1011,18 +1011,18 @@ void TPlayer::ClearProfession(void){
 }
 
 void TPlayer::SetProfession(uint8 Profession){
-	if(Profession == PROFESSION_PROMOTED){
+	if(Profession == PROFESSION_PROMOTION){
 		if(this->Profession == PROFESSION_NONE){
 			error("TPlayer::SetProfession: Spieler hat noch keinen Beruf für Veredelung.\n");
 			return;
 		}
 
-		if(this->Profession >= PROFESSION_PROMOTED){
+		if(this->Profession >= PROFESSION_PROMOTION){
 			error("TPlayer::SetProfession: Spieler hat seinen Beruf schon veredelt.\n");
 			return;
 		}
 
-		this->Profession += PROFESSION_PROMOTED;
+		this->Profession += PROFESSION_PROMOTION;
 		this->Combat.CheckCombatValues();
 
 		// TODO(fusion): This is similar to the TPlayer's constructor. It is
@@ -1107,8 +1107,8 @@ uint8 TPlayer::GetRealProfession(void){
 
 uint8 TPlayer::GetEffectiveProfession(void){
 	uint8 Profession = this->Profession;
-	if(Profession >= PROFESSION_PROMOTED){
-		Profession -= PROFESSION_PROMOTED;
+	if(Profession >= PROFESSION_PROMOTION){
+		Profession -= PROFESSION_PROMOTION;
 	}
 	return Profession;
 }
@@ -1125,7 +1125,7 @@ uint8 TPlayer::GetActiveProfession(void){
 
 bool TPlayer::GetActivePromotion(void){
 	return CheckRight(this->ID, PREMIUM_ACCOUNT)
-		&& this->Profession >= PROFESSION_PROMOTED;
+		&& this->Profession >= PROFESSION_PROMOTION;
 }
 
 bool TPlayer::SpellKnown(int SpellNr){
@@ -1459,8 +1459,7 @@ bool TPlayer::IsAttackJustified(uint32 VictimID){
 			return true;
 		}
 
-		if(Victim->GetPartyLeader(true) != 0
-		&& Victim->GetPartyLeader(true) == this->GetPartyLeader(true)){
+		if(Victim->InPartyWith(this, true)){
 			return true;
 		}
 
@@ -1481,9 +1480,9 @@ void TPlayer::RecordAttack(uint32 VictimID){
 		return;
 	}
 
-	if(!Victim->IsAttacker(this->ID, true) && !this->IsAttacker(VictimID, false)
-			&& (Victim->GetPartyLeader(true) == 0
-				|| Victim->GetPartyLeader(true) != this->GetPartyLeader(true))){
+	if(!Victim->InPartyWith(this, true)
+			&& !Victim->IsAttacker(this->ID, true)
+			&& !this->IsAttacker(VictimID, false)){
 		*this->AttackedPlayers.at(this->NumberOfAttackedPlayers) = VictimID;
 		this->NumberOfAttackedPlayers += 1;
 		print(3, "Spieler %s ist Angreifer für Spieler %s.\n", this->Name, Victim->Name);
@@ -1543,6 +1542,20 @@ void TPlayer::RecordMurder(uint32 VictimID){
 					0, NULL, 0, false);
 		}
 	}
+}
+
+void TPlayer::RecordDeath(uint32 AttackerID, int OldLevel, const char *Remark){
+	bool Justified = true;
+	if(AttackerID != 0 && AttackerID != this->ID && IsCreaturePlayer(AttackerID)){
+		TPlayer *Attacker = GetPlayer(AttackerID);
+		if(Attacker == NULL){
+			return;
+		}
+
+		Justified = Attacker->IsAttackJustified(this->ID);
+		Attacker->RecordMurder(this->ID);
+	}
+	CharacterDeathOrder(this, OldLevel, AttackerID, Remark, !Justified);
 }
 
 int TPlayer::CheckPlayerkilling(int Now){
@@ -1660,8 +1673,7 @@ int TPlayer::GetPlayerkillingMark(TPlayer *Observer){
 			return SKULL_WHITE;
 		}
 
-		if(this->GetPartyLeader(false) != 0
-		&& this->GetPartyLeader(false) == Observer->GetPartyLeader(false)){
+		if(this->InPartyWith(Observer, false)){
 			return SKULL_GREEN;
 		}
 
@@ -1679,6 +1691,16 @@ uint32 TPlayer::GetPartyLeader(bool CheckFormer){
 	}else{
 		return 0;
 	}
+}
+
+bool TPlayer::InPartyWith(TPlayer *Other, bool CheckFormer){
+	if(Other == NULL){
+		error("TPlayer::InPartyWith: Other player is NULL.\n");
+		return false;
+	}
+
+	return this->GetPartyLeader(CheckFormer) != 0
+		&& this->GetPartyLeader(CheckFormer) == Other->GetPartyLeader(CheckFormer);
 }
 
 void TPlayer::JoinParty(uint32 LeaderID){
@@ -1700,8 +1722,7 @@ int TPlayer::GetPartyMark(TPlayer *Observer){
 		return PARTY_SHIELD_LEADER;
 	}
 
-	if(this->GetPartyLeader(false) != 0
-	&& this->GetPartyLeader(false) == Observer->GetPartyLeader(false)){
+	if(this->InPartyWith(Observer, false)){
 		return PARTY_SHIELD_MEMBER;
 	}
 
@@ -1975,7 +1996,7 @@ void LoadDepot(TPlayerData *PlayerData, int DepotNr, Object Con){
 		throw ERROR;
 	}
 
-	if(DepotNr < 0 || DepotNr >= 9){ // MAX_DEPOT ?
+	if(DepotNr < 0 || DepotNr >= MAX_DEPOTS){
 		error("LoadDepot: Ungültige Depotnummer %d.\n", DepotNr);
 		throw ERROR;
 	}
@@ -2011,7 +2032,7 @@ void SaveDepot(TPlayerData *PlayerData, int DepotNr, Object Con){
 		throw ERROR;
 	}
 
-	if(DepotNr < 0 || DepotNr >= 9){ // MAX_DEPOT ?
+	if(DepotNr < 0 || DepotNr >= MAX_DEPOTS){
 		error("SaveDepot: Ungültige Depotnummer %d.\n", DepotNr);
 		throw ERROR;
 	}
@@ -2353,7 +2374,7 @@ bool LoadPlayerData(TPlayerData *Slot){
 			}
 
 			int DepotNr = Script.getNumber();
-			if(DepotNr < 0 || DepotNr >= NARRAY(Slot->Depot)){
+			if(DepotNr < 0 || DepotNr >= MAX_DEPOTS){
 				Script.error("illegal depot number");
 			}
 
@@ -2387,9 +2408,7 @@ bool LoadPlayerData(TPlayerData *Slot){
 		Slot->Inventory = NULL;
 		Slot->InventorySize = 0;
 
-		for(int DepotNr = 0;
-				DepotNr < NARRAY(Slot->Depot);
-				DepotNr += 1){
+		for(int DepotNr = 0; DepotNr < MAX_DEPOTS; DepotNr += 1){
 			delete[] Slot->Depot[DepotNr];
 			Slot->Depot[DepotNr] = NULL;
 			Slot->DepotSize[DepotNr] = 0;
@@ -2586,9 +2605,7 @@ void SavePlayerData(TPlayerData *Slot){
 
 		bool FirstDepot = true;
 		Script.writeText("Depots      = {");
-		for(int DepotNr = 0;
-				DepotNr < NARRAY(Slot->Depot);
-				DepotNr += 1){
+		for(int DepotNr = 0; DepotNr < MAX_DEPOTS; DepotNr += 1){
 			if(Slot->Depot[DepotNr] != NULL){
 				TReadBuffer Buffer(Slot->Depot[DepotNr], Slot->DepotSize[DepotNr]);
 				if(!FirstDepot){
@@ -2660,7 +2677,7 @@ void FreePlayerPoolSlot(TPlayerData *Slot){
 	}
 
 	delete[] Slot->Inventory;
-	for(int DepotNr = 0; DepotNr < 9; DepotNr += 1){ // MAX_DEPOT ?
+	for(int DepotNr = 0; DepotNr < MAX_DEPOTS; DepotNr += 1){
 		delete[] Slot->Depot[DepotNr];
 	}
 

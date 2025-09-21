@@ -5,7 +5,7 @@ This is the result of manually decompiling the leaked Tibia 7.7 server binary in
 The legal status of decompiled and rewritten code is a gray area. While the project contains no original assets or code, CipSoft may still view this as a violation of their claimed intellectual property rights, due to the original binary not being willfully released. As the author, I release this code into the public domain, relinquishing all rights and claims to it (see `LICENSE.txt`).
 
 ## Changes
-- The most important change was fixing thread interations. The original binary relied on some old Linux threading library, most likely LinuxThreads, which assigned different process ids to different threads, among other quirks. The fix is small and contained in commit `d359c0a`.
+- The most important change was fixing thread interations. The original binary relied on some old Linux threading library, most likely LinuxThreads, which assigned different process ids to different threads, among other quirks. The fix is small and contained in commit d359c0a.
 
 - Custom RSA routines were replaced with OpenSSL's libcrypto. I didn't bother to translate the decompiled routines because it would be annoying to get write and could end up with security issues. This introduces the **ONLY** dependency required to compile but is fairly simple to get it installed on most Linux distros. For example, on Debian you can use `apt install libssl-dev`.
 

@@ -18,6 +18,7 @@ var (
 		"-pedantic",
 		"-Wall",
 		"-Wextra",
+		"-Wno-deprecated-declarations",
 		"-Wno-unused-parameter",
 		"-Wno-format-truncation",
 		"-std=c++11",
@@ -25,7 +26,9 @@ var (
 		"-DOS_LINUX=1",
 		"-DARCH_X64=1",
 	}
-	linkerOptions = []string{
+	debugOptions   = []string{"-g", "-Og", "-DENABLE_ASSERTIONS=1"}
+	releaseOptions = []string{"-O2"}
+	linkerOptions  = []string{
 		"-Wl,-t",
 		"-lcrypto",
 	}
@@ -77,9 +80,9 @@ func main() {
 	// DEBUG SWITCH
 	fmt.Fprint(&output, "DEBUG ?= 0\n")
 	fmt.Fprint(&output, "ifneq ($(DEBUG), 0)\n")
-	fmt.Fprint(&output, "\tCFLAGS += -g -O0\n")
+	fmt.Fprintf(&output, "\tCFLAGS += %v\n", strings.Join(debugOptions, " "))
 	fmt.Fprint(&output, "else\n")
-	fmt.Fprint(&output, "\tCFLAGS += -O2\n")
+	fmt.Fprintf(&output, "\tCFLAGS += %v\n", strings.Join(releaseOptions, " "))
 	fmt.Fprint(&output, "endif\n\n")
 
 	// HEADERS
@@ -106,7 +109,7 @@ func main() {
 
 	// PHONY
 	fmt.Fprint(&output, ".PHONY: clean\n\n")
-	fmt.Fprint(&output, "clean:\n\t@rm -r $(BUILDDIR)\n\n")
+	fmt.Fprint(&output, "clean:\n\t@rm -rf $(BUILDDIR)\n\n")
 
 	if err := os.WriteFile("Makefile", output.Bytes(), 0644); err != nil {
 		fmt.Printf("failed to write Makefile: %v\n", err)

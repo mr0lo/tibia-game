@@ -314,7 +314,7 @@ uint32 CronInfo(Object Obj, bool Delete){
 		TCronEntry *Entry = CronEntry.at(Position);
 		if(Entry->Obj == Obj){
 			uint32 Remaining = 1;
-			if(Entry->RoundNr < RoundNr){
+			if(Entry->RoundNr > RoundNr){
 				Remaining = Entry->RoundNr - RoundNr;
 			}
 			if(Delete){

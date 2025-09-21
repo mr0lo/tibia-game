@@ -2539,7 +2539,7 @@ void TMonster::IdleStimulus(void){
 				continue;
 			}
 
-			if(this->IsFleeing() && random(1, 3) == 1){
+			if(this->IsFleeing() && random(1, 3) != 1){
 				continue;
 			}
 
@@ -2614,57 +2614,59 @@ void TMonster::IdleStimulus(void){
 			}
 
 			if(Impact != NULL){
-				switch(SpellData->Shape){
-					case SHAPE_ACTOR:{
-						int Effect = SpellData->ShapeParam1;
-						ActorShapeSpell(this, Impact, Effect);
-						break;
-					}
+				if(!Impact->isAggressive() || (this->Target != 0 && this->Target != this->Master)){
+					switch(SpellData->Shape){
+						case SHAPE_ACTOR:{
+							int Effect = SpellData->ShapeParam1;
+							ActorShapeSpell(this, Impact, Effect);
+							break;
+						}
 
-					case SHAPE_VICTIM:{
-						if(Target != NULL){
-							this->Rotate(Target);
+						case SHAPE_VICTIM:{
+							if(Target != NULL){
+								this->Rotate(Target);
 
-							int Range = SpellData->ShapeParam1;
-							int Animation = SpellData->ShapeParam2;
+								int Range = SpellData->ShapeParam1;
+								int Animation = SpellData->ShapeParam2;
+								int Effect = SpellData->ShapeParam3;
+								VictimShapeSpell(this, Target, Range,
+										Animation, Impact, Effect);
+							}
+							break;
+						}
+
+						case SHAPE_ORIGIN:{
+							int Radius = SpellData->ShapeParam1;
+							int Effect = SpellData->ShapeParam2;
+							OriginShapeSpell(this, Radius, Impact, Effect);
+							break;
+						}
+
+						case SHAPE_DESTINATION:{
+							if(Target != NULL){
+								this->Rotate(Target);
+
+								int Range = SpellData->ShapeParam1;
+								int Animation = SpellData->ShapeParam2;
+								int Radius = SpellData->ShapeParam3;
+								int Effect  = SpellData->ShapeParam4;
+								DestinationShapeSpell(this, Target, Range,
+										Animation, Radius, Impact, Effect);
+							}
+							break;
+						}
+
+						case SHAPE_ANGLE:{
+							if(Target != NULL){
+								this->Rotate(Target);
+							}
+
+							int Angle = SpellData->ShapeParam1;
+							int Range = SpellData->ShapeParam2;
 							int Effect = SpellData->ShapeParam3;
-							VictimShapeSpell(this, Target, Range,
-									Animation, Impact, Effect);
+							AngleShapeSpell(this, Angle, Range, Impact, Effect);
+							break;
 						}
-						break;
-					}
-
-					case SHAPE_ORIGIN:{
-						int Radius = SpellData->ShapeParam1;
-						int Effect = SpellData->ShapeParam2;
-						OriginShapeSpell(this, Radius, Impact, Effect);
-						break;
-					}
-
-					case SHAPE_DESTINATION:{
-						if(Target != NULL){
-							this->Rotate(Target);
-
-							int Range = SpellData->ShapeParam1;
-							int Animation = SpellData->ShapeParam2;
-							int Radius = SpellData->ShapeParam3;
-							int Effect  = SpellData->ShapeParam4;
-							DestinationShapeSpell(this, Target, Range,
-									Animation, Radius, Impact, Effect);
-						}
-						break;
-					}
-
-					case SHAPE_ANGLE:{
-						if(Target != NULL){
-							this->Rotate(Target);
-						}
-
-						int Angle = SpellData->ShapeParam1;
-						int Range = SpellData->ShapeParam2;
-						int Effect = SpellData->ShapeParam3;
-						AngleShapeSpell(this, Angle, Range, Impact, Effect);
-						break;
 					}
 				}
 

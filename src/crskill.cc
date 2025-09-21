@@ -480,20 +480,13 @@ int TSkillProbe::GetExpForLevel(int Level){
 		return 0;
 	}
 
-	// TODO(fusion): This part of the decompiled code was a bit weird. I had to
-	// look into the disassembly to figure the string parameter of `error` below
-	// and it is weird that we keep going even with invalid values of `FactorPercent`.
 	int FactorPercent = this->FactorPercent;
-	if(FactorPercent < 1000){
-		const char *MasterName = "---";
-		if(this->Master != NULL){
-			MasterName = this->Master->Name;
-		}
-		error("TSkillProbe::GetExpForLevel: Ungültiger FactorPercent-Wert %d bei %s.\n", FactorPercent, MasterName);
-	}
-
 	if(FactorPercent < 1050){
-		error("TSkillProbe::GetExpForLevel: Ungültiger FactorPercent-Wert %d. Rechne mit 1000 weiter.\n", FactorPercent);
+		if(FactorPercent != 1000){
+			const char *MasterName = (this->Master != NULL ? this->Master->Name : "---");
+			error("TSkillProbe::GetExpForLevel: Ungültiger FactorPercent-Wert %d bei %s."
+					" Rechne mit 1000 weiter.\n", FactorPercent, MasterName);
+		}
 		return (Level - this->Min) * this->Delta;
 	}
 
