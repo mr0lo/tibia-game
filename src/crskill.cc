@@ -669,9 +669,7 @@ void TSkillAdd::Advance(int Range){
 	int Max = this->Max + Increment;
 	int Act = this->Act + Increment;
 
-	// TODO(fusion): I'm not sure this is right. Do we fill health and mana when
-	// the player levels up?
-	if(Act < Max){
+	if(Act > Max){
 		Act = Max;
 	}
 

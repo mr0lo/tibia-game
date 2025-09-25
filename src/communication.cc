@@ -926,7 +926,8 @@ bool HandleLogin(TConnection *Connection){
 #if TIBIA772
 		// IMPORTANT(fusion): With 7.72, the terminal type and version are brought
 		// outside the asymmetric data. This is probably to maintain some level of
-		// backwards compatibility, given that 7.7 was the first encrypted protocol.
+		// backwards compatibility with versions before 7.7, given that it was the
+		// first encrypted protocol.
 		TerminalType = (int)InputBuffer.readWord();
 		TerminalVersion = (int)InputBuffer.readWord();
 #endif
