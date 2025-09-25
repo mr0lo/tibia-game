@@ -648,7 +648,7 @@ void CheckLevel(TCreature *Actor, int SpellNr){
 	}
 
 	if(Actor->Type == PLAYER && !CheckRight(Actor->ID, ALL_SPELLS)){
-		TSkill *Level = Actor->Skills[SKILL_LEVEL];
+		TSkill *Level = Actor->Skills[SKILL_MAGIC_LEVEL];
 		if(Level == NULL){
 			error("CheckLevel: Kein Skill LEVEL.\n");
 			throw ERROR;
@@ -4436,26 +4436,26 @@ static void InitSpells(void){
 	TSpellList *Spell;
 
 	Spell = CreateSpell(1, "ex", "ura", "");
-	Spell->Mana = 25;
-	Spell->Level = 9;
+	Spell->Mana = 20;
+	Spell->Level = 1;
 	Spell->Flags = 8;
 	Spell->Comment = "Light Healing";
 
 	Spell = CreateSpell(2, "ex", "ura", "gran", "");
 	Spell->Mana = 40;
-	Spell->Level = 11;
+	Spell->Level = 3;
 	Spell->Flags = 8;
 	Spell->Comment = "Intense Healing";
 
 	Spell = CreateSpell(3, "ex", "ura", "vita", "");
-	Spell->Mana = 160;
-	Spell->Level = 20;
+	Spell->Mana = 80;
+	Spell->Level = 8;
 	Spell->Flags = 8;
 	Spell->Comment = "Ultimate Healing";
 
 	Spell = CreateSpell(4, "ad", "ura", "gran", "");
-	Spell->Mana = 240;
-	Spell->Level = 15;
+	Spell->Mana = 60;
+	Spell->Level = 4;
 	Spell->RuneGr = 79;
 	Spell->RuneNr = 5;
 	Spell->Flags = 8;
@@ -4465,8 +4465,8 @@ static void InitSpells(void){
 	Spell->Comment = "Intense Healing Rune";
 
 	Spell = CreateSpell(5, "ad", "ura", "vita", "");
-	Spell->Mana = 400;
-	Spell->Level = 24;
+	Spell->Mana = 100;
+	Spell->Level = 11;
 	Spell->RuneGr = 79;
 	Spell->RuneNr = 13;
 	Spell->Flags = 8;
@@ -4477,13 +4477,13 @@ static void InitSpells(void){
 
 	Spell = CreateSpell(6, "ut", "ani", "hur", "");
 	Spell->Mana = 60;
-	Spell->Level = 14;
+	Spell->Level = 4;
 	Spell->Flags = 2;
 	Spell->Comment = "Haste";
 
 	Spell = CreateSpell(7, "ad", "ori", "");
-	Spell->Mana = 120;
-	Spell->Level = 15;
+	Spell->Mana = 40;
+	Spell->Level = 1;
 	Spell->RuneGr = 79;
 	Spell->RuneNr = 27;
 	Spell->Flags = 9;
@@ -4493,8 +4493,8 @@ static void InitSpells(void){
 	Spell->Comment = "Light Magic Missile";
 
 	Spell = CreateSpell(8, "ad", "ori", "gran", "");
-	Spell->Mana = 280;
-	Spell->Level = 25;
+	Spell->Mana = 70;
+	Spell->Level = 3;
 	Spell->RuneGr = 79;
 	Spell->RuneNr = 51;
 	Spell->Flags = 9;
@@ -4505,25 +4505,25 @@ static void InitSpells(void){
 
 	Spell = CreateSpell(9, "ut", "evo", "res", "para", "");
 	Spell->Mana = 0;
-	Spell->Level = 25;
+	Spell->Level = 16;
 	Spell->Flags = 1;
 	Spell->Comment = "Summon Creature";
 
 	Spell = CreateSpell(10, "ut", "evo", "lux", "");
 	Spell->Mana = 20;
-	Spell->Level = 8;
+	Spell->Level = 0;
 	Spell->Flags = 0;
 	Spell->Comment = "Light";
 
 	Spell = CreateSpell(11, "ut", "evo", "gran", "lux", "");
 	Spell->Mana = 60;
-	Spell->Level = 13;
+	Spell->Level = 3;
 	Spell->Flags = 0;
 	Spell->Comment = "Great Light";
 
 	Spell = CreateSpell(12, "ad", "eta", "sio", "");
-	Spell->Mana = 200;
-	Spell->Level = 16;
+	Spell->Mana = 100;
+	Spell->Level = 10;
 	Spell->RuneGr = 79;
 	Spell->RuneNr = 30;
 	Spell->Flags = 1;
@@ -4534,13 +4534,13 @@ static void InitSpells(void){
 
 	Spell = CreateSpell(13, "ex", "evo", "mort", "hur", "");
 	Spell->Mana = 250;
-	Spell->Level = 38;
+	Spell->Level = 20;
 	Spell->Flags = 1;
 	Spell->Comment = "Energy Wave";
 
 	Spell = CreateSpell(14, "ad", "evo", "ina", "");
-	Spell->Mana = 600;
-	Spell->Level = 27;
+	Spell->Mana = 150;
+	Spell->Level = 11;
 	Spell->RuneGr = 79;
 	Spell->RuneNr = 31;
 	Spell->Flags = 0;
@@ -4550,8 +4550,8 @@ static void InitSpells(void){
 	Spell->Comment = "Chameleon";
 
 	Spell = CreateSpell(15, "ad", "ori", "flam", "");
-	Spell->Mana = 160;
-	Spell->Level = 17;
+	Spell->Mana = 60;
+	Spell->Level = 5;
 	Spell->RuneGr = 79;
 	Spell->RuneNr = 42;
 	Spell->Flags = 9;
@@ -4561,8 +4561,8 @@ static void InitSpells(void){
 	Spell->Comment = "Fireball";
 
 	Spell = CreateSpell(16, "ad", "ori", "gran", "flam", "");
-	Spell->Mana = 480;
-	Spell->Level = 23;
+	Spell->Mana = 120;
+	Spell->Level = 9;
 	Spell->RuneGr = 79;
 	Spell->RuneNr = 44;
 	Spell->Flags = 9;
@@ -4572,8 +4572,8 @@ static void InitSpells(void){
 	Spell->Comment = "Great Fireball";
 
 	Spell = CreateSpell(17, "ad", "evo", "mas", "flam", "");
-	Spell->Mana = 600;
-	Spell->Level = 27;
+	Spell->Mana = 150;
+	Spell->Level = 9;
 	Spell->RuneGr = 79;
 	Spell->RuneNr = 45;
 	Spell->Flags = 1;
@@ -4583,8 +4583,8 @@ static void InitSpells(void){
 	Spell->Comment = "Firebomb";
 
 	Spell = CreateSpell(18, "ad", "evo", "mas", "hur", "");
-	Spell->Mana = 720;
-	Spell->Level = 31;
+	Spell->Mana = 180;
+	Spell->Level = 12;
 	Spell->RuneGr = 79;
 	Spell->RuneNr = 53;
 	Spell->Flags = 1;
@@ -4595,19 +4595,19 @@ static void InitSpells(void){
 
 	Spell = CreateSpell(19, "ex", "evo", "flam", "hur", "");
 	Spell->Mana = 80;
-	Spell->Level = 18;
+	Spell->Level = 7;
 	Spell->Flags = 9;
 	Spell->Comment = "Fire Wave";
 
 	Spell = CreateSpell(20, "ex", "iva", "para", "");
 	Spell->Mana = 20;
-	Spell->Level = 8;
+	Spell->Level = 1;
 	Spell->Flags = 0;
 	Spell->Comment = "Find Person";
 
 	Spell = CreateSpell(21, "ad", "ori", "vita", "vis", "");
-	Spell->Mana = 880;
-	Spell->Level = 45;
+	Spell->Mana = 220;
+	Spell->Level = 25;
 	Spell->RuneGr = 79;
 	Spell->RuneNr = 8;
 	Spell->Flags = 1;
@@ -4618,25 +4618,25 @@ static void InitSpells(void){
 
 	Spell = CreateSpell(22, "ex", "evo", "vis", "lux", "");
 	Spell->Mana = 100;
-	Spell->Level = 23;
+	Spell->Level = 10;
 	Spell->Flags = 1;
 	Spell->Comment = "Energy Beam";
 
 	Spell = CreateSpell(23, "ex", "evo", "gran", "vis", "lux", "");
 	Spell->Mana = 200;
-	Spell->Level = 29;
+	Spell->Level = 14;
 	Spell->Flags = 1;
 	Spell->Comment = "Great Energy Beam";
 
 	Spell = CreateSpell(24, "ex", "evo", "gran", "mas", "vis", "");
-	Spell->Mana = 1200;
-	Spell->Level = 60;
+	Spell->Mana = 800;
+	Spell->Level = 45;
 	Spell->Flags = 3;
 	Spell->Comment = "Ultimate Explosion";
 
 	Spell = CreateSpell(25, "ad", "evo", "grav", "flam", "");
-	Spell->Mana = 240;
-	Spell->Level = 15;
+	Spell->Mana = 60;
+	Spell->Level = 3;
 	Spell->RuneGr = 79;
 	Spell->RuneNr = 41;
 	Spell->Flags = 1;
@@ -4647,7 +4647,7 @@ static void InitSpells(void){
 
 	Spell = CreateSpell(26, "ad", "evo", "grav", "pox", "");
 	Spell->Mana = 200;
-	Spell->Level = 14;
+	Spell->Level = 2;
 	Spell->RuneGr = 79;
 	Spell->RuneNr = 25;
 	Spell->Flags = 1;
@@ -4657,8 +4657,8 @@ static void InitSpells(void){
 	Spell->Comment = "Poison Field";
 
 	Spell = CreateSpell(27, "ad", "evo", "grav", "vis", "");
-	Spell->Mana = 320;
-	Spell->Level = 18;
+	Spell->Mana = 80;
+	Spell->Level = 5;
 	Spell->RuneGr = 79;
 	Spell->RuneNr = 17;
 	Spell->Flags = 1;
@@ -4668,7 +4668,7 @@ static void InitSpells(void){
 	Spell->Comment = "Energy Field";
 
 	Spell = CreateSpell(28, "ad", "evo", "mas", "grav", "flam", "");
-	Spell->Mana = 780;
+	Spell->Mana = 200;
 	Spell->Level = 33;
 	Spell->RuneGr = 79;
 	Spell->RuneNr = 43;
@@ -4680,13 +4680,13 @@ static void InitSpells(void){
 
 	Spell = CreateSpell(29, "ex", "ana", "pox", "");
 	Spell->Mana = 30;
-	Spell->Level = 10;
+	Spell->Level = 1;
 	Spell->Flags = 0;
 	Spell->Comment = "Antidote";
 
 	Spell = CreateSpell(30, "ad", "ito", "grav", "");
-	Spell->Mana = 120;
-	Spell->Level = 17;
+	Spell->Mana = 60;
+	Spell->Level = 6;
 	Spell->RuneGr = 79;
 	Spell->RuneNr = 1;
 	Spell->Flags = 0;
@@ -4696,8 +4696,8 @@ static void InitSpells(void){
 	Spell->Comment = "Destroy Field";
 
 	Spell = CreateSpell(31, "ad", "ana", "pox", "");
-	Spell->Mana = 200;
-	Spell->Level = 15;
+	Spell->Mana = 50;
+	Spell->Level = 5;
 	Spell->RuneGr = 79;
 	Spell->RuneNr = 6;
 	Spell->Flags = 0;
@@ -4707,8 +4707,8 @@ static void InitSpells(void){
 	Spell->Comment = "Antidote Rune";
 
 	Spell = CreateSpell(32, "ad", "evo", "mas", "grav", "pox", "");
-	Spell->Mana = 640;
-	Spell->Level = 29;
+	Spell->Mana = 160;
+	Spell->Level = 11;
 	Spell->RuneGr = 79;
 	Spell->RuneNr = 29;
 	Spell->Flags = 1;
@@ -4718,8 +4718,8 @@ static void InitSpells(void){
 	Spell->Comment = "Poison Wall";
 
 	Spell = CreateSpell(33, "ad", "evo", "mas", "grav", "vis", "");
-	Spell->Mana = 1000;
-	Spell->Level = 41;
+	Spell->Mana = 250;
+	Spell->Level = 18;
 	Spell->RuneGr = 79;
 	Spell->RuneNr = 19;
 	Spell->Flags = 1;
@@ -4748,13 +4748,13 @@ static void InitSpells(void){
 
 	Spell = CreateSpell(38, "ut", "evo", "res", "ina", "para", "");
 	Spell->Mana = 100;
-	Spell->Level = 23;
+	Spell->Level = 10;
 	Spell->Flags = 0;
 	Spell->Comment = "Creature Illusion";
 
 	Spell = CreateSpell(39, "ut", "ani", "gran", "hur", "");
 	Spell->Mana = 100;
-	Spell->Level = 20;
+	Spell->Level = 8;
 	Spell->Flags = 2;
 	Spell->Comment = "Strong Haste";
 
@@ -4771,21 +4771,21 @@ static void InitSpells(void){
 	Spell->Comment = "Change Data";
 
 	Spell = CreateSpell(42, "ex", "evo", "pan", "");
-	Spell->Mana = 120;
-	Spell->Level = 14;
+	Spell->Mana = 30;
+	Spell->Level = 0;
 	Spell->SoulPoints = 1;
 	Spell->Flags = 0;
 	Spell->Comment = "Food";
 
 	Spell = CreateSpell(44, "ut", "amo", "vita", "");
 	Spell->Mana = 50;
-	Spell->Level = 14;
+	Spell->Level = 4;
 	Spell->Flags = 0;
 	Spell->Comment = "Magic Shield";
 
 	Spell = CreateSpell(45, "ut", "ana", "vid", "");
-	Spell->Mana = 440;
-	Spell->Level = 35;
+	Spell->Mana = 210;
+	Spell->Level = 15;
 	Spell->Flags = 0;
 	Spell->Comment = "Invisible";
 
@@ -4802,22 +4802,22 @@ static void InitSpells(void){
 	Spell->Comment = "Teleport to Friend";
 
 	Spell = CreateSpell(48, "ex", "evo", "con", "pox", "");
-	Spell->Mana = 130;
-	Spell->Level = 16;
+	Spell->Mana = 70;
+	Spell->Level = 8;
 	Spell->SoulPoints = 2;
 	Spell->Flags = 0;
 	Spell->Comment = "Poisoned Arrow";
 
 	Spell = CreateSpell(49, "ex", "evo", "con", "flam", "");
-	Spell->Mana = 290;
-	Spell->Level = 25;
+	Spell->Mana = 120;
+	Spell->Level = 10;
 	Spell->SoulPoints = 3;
 	Spell->Flags = 0;
 	Spell->Comment = "Explosive Arrow";
 
 	Spell = CreateSpell(50, "ad", "evo", "res", "flam", "");
-	Spell->Mana = 600;
-	Spell->Level = 27;
+	Spell->Mana = 150;
+	Spell->Level = 13;
 	Spell->RuneGr = 79;
 	Spell->RuneNr = 48;
 	Spell->Flags = 3;
@@ -4828,7 +4828,7 @@ static void InitSpells(void){
 
 	Spell = CreateSpell(51, "ex", "evo", "con", "");
 	Spell->Mana = 100;
-	Spell->Level = 13;
+	Spell->Level = 2;
 	Spell->SoulPoints = 1;
 	Spell->Flags = 0;
 	Spell->Comment = "Conjure Arrow";
@@ -4846,8 +4846,8 @@ static void InitSpells(void){
 	Spell->Comment = "Summon Wild Creature";
 
 	Spell = CreateSpell(54, "ad", "ana", "ani", "");
-	Spell->Mana = 1400;
-	Spell->Level = 54;
+	Spell->Mana = 900;
+	Spell->Level = 35;
 	Spell->RuneGr = 79;
 	Spell->RuneNr = 18;
 	Spell->Flags = 3;
@@ -4857,8 +4857,8 @@ static void InitSpells(void){
 	Spell->Comment = "Paralyze";
 
 	Spell = CreateSpell(55, "ad", "evo", "mas", "vis", "");
-	Spell->Mana = 880;
-	Spell->Level = 37;
+	Spell->Mana = 220;
+	Spell->Level = 18;
 	Spell->RuneGr = 79;
 	Spell->RuneNr = 2;
 	Spell->Flags = 3;
@@ -4869,7 +4869,7 @@ static void InitSpells(void){
 
 	Spell = CreateSpell(56, "ex", "evo", "gran", "mas", "pox", "");
 	Spell->Mana = 600;
-	Spell->Level = 50;
+	Spell->Level = 28;
 	Spell->Flags = 3;
 	Spell->Comment = "Poison Storm";
 
@@ -4977,19 +4977,19 @@ static void InitSpells(void){
 
 	Spell = CreateSpell(75, "ut", "evo", "vis", "lux", "");
 	Spell->Mana = 140;
-	Spell->Level = 26;
+	Spell->Level = 12;
 	Spell->Flags = 2;
 	Spell->Comment = "Ultimate Light";
 
 	Spell = CreateSpell(76, "ex", "ani", "tera", "");
 	Spell->Mana = 20;
-	Spell->Level = 9;
+	Spell->Level = 1;
 	Spell->Flags = 2;
 	Spell->Comment = "Magic Rope";
 
 	Spell = CreateSpell(77, "ad", "evo", "res", "pox", "");
-	Spell->Mana = 400;
-	Spell->Level = 21;
+	Spell->Mana = 100;
+	Spell->Level = 10;
 	Spell->RuneGr = 79;
 	Spell->RuneNr = 32;
 	Spell->Flags = 3;
@@ -4999,8 +4999,8 @@ static void InitSpells(void){
 	Spell->Comment = "Envenom";
 
 	Spell = CreateSpell(78, "ad", "ito", "tera", "");
-	Spell->Mana = 200;
-	Spell->Level = 21;
+	Spell->Mana = 60;
+	Spell->Level = 6;
 	Spell->RuneGr = 79;
 	Spell->RuneNr = 50;
 	Spell->Amount = 3;
@@ -5010,33 +5010,33 @@ static void InitSpells(void){
 	Spell->Comment = "Desintegrate";
 
 	Spell = CreateSpell(79, "ex", "evo", "con", "mort", "");
-	Spell->Mana = 140;
-	Spell->Level = 17;
+	Spell->Mana = 70;
+	Spell->Level = 6;
 	Spell->SoulPoints = 2;
 	Spell->Flags = 2;
 	Spell->Comment = "Conjure Bolt";
 
 	Spell = CreateSpell(80, "ex", "ori", "");
 	Spell->Mana = 0;
-	Spell->Level = 35;
+	Spell->Level = 5;
 	Spell->Flags = 7;
 	Spell->Comment = "Berserk";
 
 	Spell = CreateSpell(81, "ex", "ani", "hur", "para", "");
 	Spell->Mana = 50;
-	Spell->Level = 12;
+	Spell->Level = 1;
 	Spell->Flags = 2;
 	Spell->Comment = "Levitate";
 
 	Spell = CreateSpell(82, "ex", "ura", "gran", "mas", "res", "");
 	Spell->Mana = 150;
-	Spell->Level = 36;
+	Spell->Level = 15;
 	Spell->Flags = 10;
 	Spell->Comment = "Mass Healing";
 
 	Spell = CreateSpell(83, "ad", "ana", "mort", "");
-	Spell->Mana = 600;
-	Spell->Level = 27;
+	Spell->Mana = 300;
+	Spell->Level = 7;
 	Spell->RuneGr = 79;
 	Spell->RuneNr = 56;
 	Spell->Amount = 1;
@@ -5047,19 +5047,19 @@ static void InitSpells(void){
 
 	Spell = CreateSpell(84, "ex", "ura", "sio", "para", "");
 	Spell->Mana = 70;
-	Spell->Level = 18;
+	Spell->Level = 7;
 	Spell->Flags = 10;
 	Spell->Comment = "Heal Friend";
 
 	Spell = CreateSpell(85, "ex", "ana", "mas", "mort", "");
-	Spell->Mana = 500;
+	Spell->Mana = 300;
 	Spell->Level = 30;
 	Spell->Flags = 3;
 	Spell->Comment = "Undead Legion";
 
 	Spell = CreateSpell(86, "ad", "evo", "grav", "tera", "");
-	Spell->Mana = 750;
-	Spell->Level = 32;
+	Spell->Mana = 210;
+	Spell->Level = 15;
 	Spell->RuneGr = 79;
 	Spell->RuneNr = 33;
 	Spell->Amount = 3;
@@ -5070,31 +5070,31 @@ static void InitSpells(void){
 
 	Spell = CreateSpell(87, "ex", "ori", "mort", "");
 	Spell->Mana = 20;
-	Spell->Level = 11;
+	Spell->Level = 2;
 	Spell->Flags = 3;
 	Spell->Comment = "Force Strike";
 
 	Spell = CreateSpell(88, "ex", "ori", "vis", "");
 	Spell->Mana = 20;
-	Spell->Level = 12;
+	Spell->Level = 3;
 	Spell->Flags = 3;
 	Spell->Comment = "Energy Strike";
 
 	Spell = CreateSpell(89, "ex", "ori", "flam", "");
 	Spell->Mana = 20;
-	Spell->Level = 12;
+	Spell->Level = 3;
 	Spell->Flags = 3;
 	Spell->Comment = "Flame Strike";
 
 	Spell = CreateSpell(90, "ex", "ana", "ina", "");
 	Spell->Mana = 200;
-	Spell->Level = 26;
+	Spell->Level = 12;
 	Spell->Flags = 2;
 	Spell->Comment = "Cancel Invisibility";
 
 	Spell = CreateSpell(91, "ad", "evo", "mas", "pox", "");
-	Spell->Mana = 520;
-	Spell->Level = 25;
+	Spell->Mana = 130;
+	Spell->Level = 8;
 	Spell->RuneGr = 79;
 	Spell->RuneNr = 26;
 	Spell->Flags = 3;
@@ -5105,25 +5105,25 @@ static void InitSpells(void){
 
 	Spell = CreateSpell(92, "ex", "eta", "vis", "");
 	Spell->Mana = 80;
-	Spell->Level = 41;
+	Spell->Level = 22;
 	Spell->Flags = 2;
 	Spell->Comment = "Enchant Staff";
 
 	Spell = CreateSpell(93, "ex", "eta", "res", "");
 	Spell->Mana = 30;
-	Spell->Level = 20;
+	Spell->Level = 4;
 	Spell->Flags = 3;
 	Spell->Comment = "Challenge";
 
 	Spell = CreateSpell(94, "ex", "evo", "grav", "vita", "");
-	Spell->Mana = 220;
-	Spell->Level = 27;
+	Spell->Mana = 150;
+	Spell->Level = 13;
 	Spell->Flags = 3;
 	Spell->Comment = "Wild Growth";
 
 	Spell = CreateSpell(95, "ex", "evo", "con", "vis", "");
-	Spell->Mana = 800;
-	Spell->Level = 59;
+	Spell->Mana = 200;
+	Spell->Level = 14;
 	Spell->SoulPoints = 3;
 	Spell->Flags = 2;
 	Spell->Comment = "Power Bolt";
