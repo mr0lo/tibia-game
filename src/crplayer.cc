@@ -7,6 +7,7 @@
 #include "query.hh"
 #include "threads.hh"
 #include "writer.hh"
+#include "magic.hh"
 
 static Semaphore PlayerMutex(1);
 static vector<TPlayer*> PlayerList(0, 100, 10, NULL);
@@ -1143,7 +1144,7 @@ void TPlayer::LearnSpell(int SpellNr){
 		int reqMlvl = GetSpellLevel(SpellNr);
 		int curMlvl = this->Skills[SKILL_MAGIC_LEVEL]->Get();
 		if(curMlvl < reqMlvl){
-			SendMessage(this->Connection, TALK_FAILURE_MESSAGE, \"You need magic level %d to learn this spell.\", reqMlvl);
+			SendMessage(this->Connection, TALK_FAILURE_MESSAGE, "You need magic level %d to learn this spell.", reqMlvl);
 			return;
 		}
 	}

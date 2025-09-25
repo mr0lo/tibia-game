@@ -4084,7 +4084,6 @@ void UseMagicItem(uint32 CreatureID, Object Obj, Object Dest){
 				Other = Other.getNextObject();
 			}
 		}
-	}
 
 		Object Other = GetFirstContainerObject(Dest.getContainer());
 		while(Other != NONE){
