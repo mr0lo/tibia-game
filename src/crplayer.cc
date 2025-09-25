@@ -1,4 +1,5 @@
 #include "cr.hh"
+#include "magic.hh"
 #include "config.hh"
 #include "houses.hh"
 #include "info.hh"
@@ -7,7 +8,6 @@
 #include "query.hh"
 #include "threads.hh"
 #include "writer.hh"
-#include "magic.hh"
 
 static Semaphore PlayerMutex(1);
 static vector<TPlayer*> PlayerList(0, 100, 10, NULL);
@@ -1012,7 +1012,7 @@ void TPlayer::ClearProfession(void){
 }
 
 void TPlayer::SetProfession(uint8 Profession){
-	if(Profession == PROFESSION_PROMOTION){
+	if(this->Profession >= PROFESSION_PROMOTION){
 		if(this->Profession == PROFESSION_NONE){
 			error("TPlayer::SetProfession: Spieler hat noch keinen Beruf für Veredelung.\n");
 			return;
@@ -1686,6 +1686,7 @@ int TPlayer::GetPlayerkillingMark(TPlayer *Observer){
 	return SKULL_NONE;
 }
 
+/*
 uint32 TPlayer::GetPartyLeader(bool CheckFormer){
 	if(this->PartyLeavingRound == 0 || (CheckFormer && (this->PartyLeavingRound + 5) >= RoundNr)){
 		return this->PartyLeader;
@@ -1693,6 +1694,7 @@ uint32 TPlayer::GetPartyLeader(bool CheckFormer){
 		return 0;
 	}
 }
+*/
 
 bool TPlayer::InPartyWith(TPlayer *Other, bool CheckFormer){
 	if(Other == NULL){

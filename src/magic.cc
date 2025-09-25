@@ -28,7 +28,7 @@ struct TSpellList {
 };
 
 static TSpellList SpellList[256];
-static TCircle Circle[10];
+static TCircle Circle[9];
 
 static const char SpellSyllable[51][6] = {
 	"",
@@ -83,6 +83,19 @@ static const char SpellSyllable[51][6] = {
 	"",
 	"",
 };
+
+// =============================================================================
+// Function Declarations
+// =============================================================================
+static void DeleteRune(Object Obj);
+static void InitCircles(void);
+static TSpellList *CreateSpell(int SpellNr, ...);
+static void InitSpells(void);
+static int FindSpell(Object Obj);
+/*
+static bool IsAggressiveSpell(int SpellNr);
+static void CheckRuneLevel(TPlayer *Actor, int SpellNr);
+*/
 
 static bool IsAggressionValid(TCreature *Actor, TCreature *Victim){
 	ASSERT(Actor != NULL && Victim != NULL);
@@ -4084,6 +4097,7 @@ void UseMagicItem(uint32 CreatureID, Object Obj, Object Dest){
 				Other = Other.getNextObject();
 			}
 		}
+	}
 
 		Object Other = GetFirstContainerObject(Dest.getContainer());
 		while(Other != NONE){
@@ -4098,7 +4112,6 @@ void UseMagicItem(uint32 CreatureID, Object Obj, Object Dest){
 			}
 			Other = Other.getNextObject();
 		}
-	}
 
 	// NOTE(fusion): Rune check.
 	CheckRuneLevel(Actor, SpellNr);
